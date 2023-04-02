@@ -215,7 +215,7 @@ By using yad, a graphical dialog to choose a color is shown if no\wrong values f
 The option --ram <hex_ram_value> is mandatory. You can enter a single hex value or a comma separated set of hex values.
 If you enter e.g. --ram 61,63 on --bus 0, but you really only have ram 61, ram 63 will be skipped.
 
-If the option --bus is omited or a wrong/non existent value has been entered, a prompt to select an i2c-bus will be shown.
+If the option --bus is omitted or a wrong/non existent value has been entered, a prompt to select an i2c-bus will be shown.
 
 Options --red, --green and --blue accept a value from 0 to 255. If a color is 0 you can omit said color.
 If no colors/wrong values has been entered, a graphical dialog to choose a color will be shown.
@@ -240,7 +240,7 @@ show a graphical dialog to choose a color for ram 61 on i2c-bus 0
 show a graphical dialog to choose a color with brightness at 70 for ram 61 on i2c-bus 0 without the warning before apply the settings
 # ${kfrgb_name} --ram 61 --bus 0 --brightness 70 --nowarn
 
-set a yellow color to ram 0x61 on i2c-bus 0 (in this case the option --blue 0 can be omited)
+set a yellow color to ram 0x61 on i2c-bus 0 (in this case the option --blue 0 can be omitted)
 # ${kfrgb_name} --ram 61 --bus 0 --red 255 --green 255
 
 set a purple color to ram 0x61 and 0x63 on i2c-bus 0 without the warning before apply the settings
