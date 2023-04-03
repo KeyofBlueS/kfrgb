@@ -47,7 +47,7 @@ Option `--off` will turn off leds on the ram. This option has full priority over
 
 examples:
 
-show prompt to select an i2c-bus and choosing a color from a graphical dialog for ram 61
+show prompt to select an i2c-bus and choose a color from a graphical dialog for ram 61
 
 `# kfrgb --ram 61`
 
@@ -69,7 +69,7 @@ set a purple color to ram 0x61 and 0x63 on i2c-bus 0 without the warning before 
 
 set a white color with brightness at 50 to ram 0x61 and 0x63 on i2c-bus 0 without the warning before apply the settings
 
-`# kfrgb --ram 61,63 --bus 0 --red 200 --green 0 --blue 255 --brightness 50 --nowarn`
+`# kfrgb --ram 61,63 --bus 0 --red 255 --green 255 --blue 255 --brightness 50 --nowarn`
 
 Turn off leds to ram 0x63 on i2c-bus 0 without the warning before apply the settings
 
