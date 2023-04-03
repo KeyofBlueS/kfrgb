@@ -86,7 +86,7 @@ function i2cset_retry() {
 		retry_count="$(("${retry_count}" + 1))"
 		if [[ "${retry_count}" = '20' ]]; then
 			echo -e "\e[1;31m- Error: Write failed in command i2cset ${command}\e[0m"
-			echo -e "\e[1;31m- Maximum retryes reached, aborting!\e[0m"
+			echo -e "\e[1;31m- Maximum retries reached, aborting!\e[0m"
 			exit 1
 		fi
 		sleep "${wait}"
