@@ -41,7 +41,7 @@ If no/wrong value has been entered, the brightness will default to 100.
 
 Option `--wait` will set the sleep time between i2cset commands. Accept integer or decimal value.
 If no\wrong value has been entered, the wait time will default to 0.015.
-Anyway this script will retry (for at most 20 times and then will abort) if an i2cset command fail, so you can keep wait time very low and don't worry about write errors.
+Anyway this script will retry (for at most 20 times and then will abort) if an i2cset command fails, so you can keep wait time very low and don't worry about write errors.
 
 Option `--off` will turn off leds on the ram. This option has full priority over other options.
 
