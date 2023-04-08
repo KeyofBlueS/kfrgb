@@ -18,6 +18,11 @@ While waiting for support to be added to OpenRGB, this script is intended to be 
 Set any mode between rainbow, prism, spectrum, slide, wind, static, lightspeed, rain, firework, and twilight.
 By using yad, a graphical dialog to choose a color is shown if no\wrong values for them are entered (static mode only).
 
+Not all modes are supported.
+Modes that require more than 1 ram stick are not supported (teleport, flame, voltage, countdown, rhythm, slither).
+Modes breath and dynamic are not supported because if set, then you can't set any other mode, you need to turn off the pc (do a cold boot) to 'unlock' .
+Setting speed on mode twilight is not supported, this mode will run at full speed.
+
 ### USAGE
 The option `--ram <hex_ram_value>` is mandatory. You can enter a single hex value or a comma separated set of hex values.
 If you enter e.g. `--ram 61,63`, but you really only have ram 61, ram 63 will be skipped.
