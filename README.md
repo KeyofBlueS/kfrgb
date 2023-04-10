@@ -23,6 +23,17 @@ Modes that require more than 1 ram stick are not supported (teleport, flame, vol
 Modes breath and dynamic are not supported because if set, then you can't set any other mode, you need to turn off the pc (do a cold boot) to 'unlock' .
 Setting speed on mode twilight is not supported, this mode will run at full speed.
 
+### INSTALL
+```
+curl -o /tmp/kfrgb.sh 'https://raw.githubusercontent.com/KeyofBlueS/kfrgb/master/kfrgb.sh'
+sudo mkdir -p /opt/kfrgb/
+sudo mv /tmp/kfrgb.sh /opt/kfrgb/
+sudo chown root:root /opt/kfrgb/kfrgb.sh
+sudo chmod 755 /opt/kfrgb/kfrgb.sh
+sudo chmod +x /opt/kfrgb/kfrgb.sh
+sudo ln -s /opt/kfrgb/kfrgb.sh /usr/local/bin/kfrgb
+```
+
 ### USAGE
 The option `--ram <hex_ram_value>` is mandatory. You can enter a single hex value or a comma separated set of hex values.
 If you enter e.g. `--ram 61,63`, but you really only have ram 61, ram 63 will be skipped.
@@ -67,39 +78,39 @@ examples:
 
 show a menu where you can select an i2c-bus, then choose a mode to set for ram 61
 
-`# ${kfrgb_name} --ram 61`
+`# kfrgb --ram 61`
 
 show a menu where you can choose a mode to set for ram 61 on i2c-bus 0
 
-`# ${kfrgb_name} --ram 61 --bus 0`
+`# kfrgb --ram 61 --bus 0`
 
 show a graphical dialog to choose a color with brightness at 70 for ram 61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --brightness 70 --mode static --nowarn`
+`# kfrgb --ram 61 --bus 0 --brightness 70 --mode static --nowarn`
 
 set a yellow color to ram 0x61 and 0x63 on i2c-bus 0 (in this case the options --mode static and --blue 0 can be omitted)
 
-`# ${kfrgb_name} --ram 61,63 --bus 0 --red 255 --green 255`
+`# kfrgb --ram 61,63 --bus 0 --red 255 --green 255`
 
 set mode wind with default parameters to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode wind --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode wind --nowarn`
 
 set mode wind with brightness at 100 and direction down to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode wind --brightness 100 --direction down --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode wind --brightness 100 --direction down --nowarn`
 
 set mode slide with speed at 8 and direction up to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode slide --speed 8 --direction up --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode slide --speed 8 --direction up --nowarn`
 
 set mode rainbow with speed at 1 to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode rainbow --speed 1 --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode rainbow --speed 1 --nowarn`
 
 Turn off leds to ram 0x63 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 63 --bus 0 --off --nowarn`
+`# kfrgb --ram 63 --bus 0 --off --nowarn`
 
 
 ```
