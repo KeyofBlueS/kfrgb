@@ -84,63 +84,63 @@ Option `--off` will turn off leds on the ram. This option will take full priorit
 
 show a menu where you can select an i2c-bus, then choose a mode to set for ram 61
 
-`# ${kfrgb_name} --ram 61`
+`# kfrgb --ram 61`
 
 show a menu where you can choose a mode to set for ram 61 on i2c-bus 0
 
-`# ${kfrgb_name} --ram 61 --bus 0`
+`# kfrgb --ram 61 --bus 0`
 
 show a graphical dialog to choose a color with brightness at 70 for ram 61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --brightness 70 --mode static --ask --nowarn`
+`# kfrgb --ram 61 --bus 0 --brightness 70 --mode static --ask --nowarn`
 
 set a yellow color to ram 0x61 and 0x63 on i2c-bus 0 (in this case the options --mode static)
 
-`# ${kfrgb_name} --ram 61,63 --bus 0 --color 255,255,0`
+`# kfrgb --ram 61,63 --bus 0 --color 255,255,0`
 
 set a every single led color to ram 0x61 and 0x63 on i2c-bus 0
 
-`# ${kfrgb_name} --ram 61,63 --bus 0 --mode static_byledcolor --byledcolors 255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255`
+`# kfrgb --ram 61,63 --bus 0 --mode static_byledcolor --byledcolors 255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255`
 
 set mode wind with default parameters to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode wind --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode wind --nowarn`
 
 set mode wind with brightness at 100 and direction down to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode wind --brightness 100 --direction down --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode wind --brightness 100 --direction down --nowarn`
 
 set mode wind with backcolor to violet, brightness at 100 and direction down to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode wind --backcolor 150,70,200 --brightness 100 --direction down --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode wind --backcolor 150,70,200 --brightness 100 --direction down --nowarn`
 
 set mode slide with speed at 8 and direction up to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode slide --speed 8 --direction up --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode slide --speed 8 --direction up --nowarn`
 
 set mode rainbow with speed at 1 to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode rainbow --speed 1 --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode rainbow --speed 1 --nowarn`
 
 set mode slide and 10 colors to cycle through to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode slide --tencolors 255,0,0,0,255,0,255,100,0,0,0,255,238,238,0,128,0,128,0,109,119,255,200,0,255,85,255,60,125,255 --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode slide --tencolors 255,0,0,0,255,0,255,100,0,0,0,255,238,238,0,128,0,128,0,109,119,255,200,0,255,85,255,60,125,255 --nowarn`
 
 set mode slide and 3 colors (you can omit the remaining 7 colors) to cycle through to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode slide --tencolors 255,0,0,0,255,0,255,100,0 --tencolorsnumber 3 --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode slide --tencolors 255,0,0,0,255,0,255,100,0 --tencolorsnumber 3 --nowarn`
 
 set mode wind and, asking for user input, 10 colors to cycle through to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode wind --ask --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode wind --ask --nowarn`
 
 set mode wind and, asking for user input, 3 colors to cycle through to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 61 --bus 0 --mode wind --tencolorsnumber 3 --ask --nowarn`
+`# kfrgb --ram 61 --bus 0 --mode wind --tencolorsnumber 3 --ask --nowarn`
 
 Turn off leds to ram 0x63 on i2c-bus 0 without the warning before apply the settings
 
-`# ${kfrgb_name} --ram 63 --bus 0 --off --nowarn`
+`# kfrgb --ram 63 --bus 0 --off --nowarn`
 
 ### NOTE ABOUT COMMA SEPARATED VALUES
 As explained above, RGB values can be set in a comma separated format e.g.:
