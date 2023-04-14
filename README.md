@@ -24,12 +24,12 @@ Modes breath and dynamic are not supported because if set, then you can't set an
 Setting speed on mode twilight is not supported, this mode will run at full speed.
 
 ### USAGE
-The option --ram <hex_ram_value> is mandatory. You can enter a single hex value or a comma separated set of hex values.
+The option `--ram <hex_ram_value>` is mandatory. You can enter a single hex value or a comma separated set of hex values.
 If you enter e.g. --ram 61,63 on --bus 0, but you really only have ram 61, ram 63 will be skipped.
 
-If the option --bus <i2c_bus_number> is omitted or a wrong/non existent value has been entered, a prompt to select an i2c-bus will be shown.
+If the option `--bus <i2c_bus_number>` is omitted or a wrong/non existent value has been entered, a prompt to select an i2c-bus will be shown.
 
-Use the option --mode <mode_name> to set a mode.
+Use the option `--mode <mode_name>` to set a mode.
 Available modes are 'rainbow' 'prism' 'spectrum' 'slide' 'wind' 'static' 'static_byledcolor' 'lightspeed' 'rain' 'firework' 'twilight'.
 Pass 'list' as <mode_name> to get a menu where you can choose a mode to set.
 
