@@ -1136,7 +1136,7 @@ Option --tencolors <tencolors_values> accept 30 comma separated values from 0 to
 Use this option to cycle through these colors in the supported mode (slide, wind, lightspeed, rain, firework).
 
 Option --tencolorsnumber <tencolorsnumber_value> accept 1 value from 0 to 10.
-Use this option to set set how many colors will cycle the supported mode (slide, wind, lightspeed, rain, firework).
+Use this option to set how many colors will cycle the supported mode (slide, wind, lightspeed, rain, firework).
 e.g. '--tencolorsnumber 3' to cycle the first 3 colors out of 10.
 
 Option --backcolor <r_value,g_value,b_value> accept 3 comma separated values from 0 to 255.
