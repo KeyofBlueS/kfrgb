@@ -144,9 +144,11 @@ Turn off leds to ram 0x63 on i2c-bus 0 without the warning before apply the sett
 
 ### NOTE ABOUT COMMA SEPARATED VALUES
 As explained above, RGB values can be set in a comma separated format e.g.:
+
 `--tencolors 255,0,0,0,255,0,255,100,0,0,0,255,238,238,0,128,0,128,0,109,119,255,200,0,255,85,255,60,125,255`
 
 but also comma/space separated and must be enclosed in single quotes e.g.:
+
 `--tencolors '255 0 0,0 255 0,255 100 0,0 0 255,238 238 0,128 0 128,0 109 119,255 200 0,255 85 255,60 125 255'`
 
 I prefer the latter because i can visually separate every RGB triplet.
