@@ -156,22 +156,22 @@ I prefer the latter because i can visually separate every RGB triplet.
 
 ```
 Options:
--s, --bus <i2c_bus_number>            Enter the i2c-bus number.
--m, --ram <hex_ram_value>             Enter the comma separated hex ram values. Mandatory.
--d, --mode <mode_name>                Enter the name of the mode. Pass 'list' as <mode_name> to get a menu
-                                                                  where you can choose a mode to set.
--p, --speed <speed_value>             Enter  1 value between 1 and 11. Default depends on mode.
--e, --delay <delay_value>             Enter  1 value. Min 1, max depends on mode.
--q, --length <length_value>           Enter  1 value. Min 1, max depends on mode.
--i, --direction <direction_value>     Enter  1 value between 'up' or 'down'. Default depends on mode.
--c, --color <r_value,g_value,b_value> Enter  3 comma separated values between 0 and 255.
--b, --byledcolors <green_value>       Enter 36 comma separated values between 0 and 255.
--t, --tencolors <blue_value>          Enter 30 comma separated values between 0 and 255.
--u, --tencolorsnumber <blue_value>    Enter  1 value between 1 and 10. Default is 10.
--k, --backcolor <blue_value>          Enter  3 comma separated values between 0 and 255.
--l, --brightness <brightness_value>   Enter  1 value between 0 and 100. Default is 80.
--w, --wait <wait_value>               Enter a sleep time between i2cset commands. Default is 0.015.
--o, --off                             Turn off all leds.
--n, --nowarn                          Apply settings without warning.
--h, --help                            Show this help.
+-s, --bus <i2c_bus_number>     Enter the i2c-bus number.
+-m, --ram <hex_ram_value>      Enter the comma separated hex ram values. Mandatory.
+-d, --mode <mode>              Enter the name of the mode. Pass 'list' as <mode_name> to get a menu
+                                                           where you can choose a mode to set.
+-p, --speed <value>            Enter  1 value between 1 and 11. Default depends on mode.
+-e, --delay <value>            Enter  1 value. Min 1, max depends on mode.
+-q, --length <value>           Enter  1 value. Min 1, max depends on mode.
+-i, --direction <value>        Enter  1 value between 'up' or 'down'. Default depends on mode.
+-c, --color <values>           Enter  3 comma separated values between 0 and 255.
+-b, --byledcolors <values>     Enter 36 comma separated values between 0 and 255.
+-t, --tencolors <values>       Enter 30 comma separated values between 0 and 255.
+-u, --tencolorsnumber <value>  Enter  1 value between 1 and 10. Default is 10.
+-k, --backcolor <value>        Enter  3 comma separated values between 0 and 255.
+-l, --brightness <value>       Enter  1 value between 0 and 100. Default is 80.
+-o, --off                      Turn off all leds.
+-w, --wait <value>             Enter a sleep time between i2cset commands. Default is 0.015.
+-n, --nowarn                   Apply settings without warning.
+-h, --help                     Show this help.
 ```
