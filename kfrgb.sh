@@ -225,7 +225,7 @@ function set_yad_colors() {
 	echo -e "\e[0;32m- Please select color for option ${values_for}:\e[0m"
 	while true; do
 		while true; do
-			color="$(yad --color --title='Color selection' --text="Mode: ${mode}; Please select color ${color_number}/$((${max_values} / 3)) for option ${values_for}:" --button=OK --center)"
+			color="$(yad --color --gtk-palette --init-color=#ff0000 --title='Color selection' --text="Mode: ${mode}; Please select color ${color_number}/$((${max_values} / 3)) for option ${values_for}:" --button=OK --center)"
 			if [[ -n "${color}" ]]; then
 				selected_color="$((16#${color:1:2})),$((16#${color:3:2})),$((16#${color:5:2}))"
 				break
