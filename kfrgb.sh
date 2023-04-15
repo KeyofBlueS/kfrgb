@@ -1056,19 +1056,6 @@ function i2cset_retry() {
 	done
 }
 
-function yad_color() {
-
-	while true; do
-		color="$(yad --color --title='Color selection' --text="Please select color ${color_number} for mode ${mode}" --button=OK --center)"
-		if [[ -n "${color}" ]]; then
-			selected_color="$((16#${color:1:2})),$((16#${color:3:2})),$((16#${color:5:2}))"
-			break
-		else
-			exit 0
-		fi
-	done
-}
-
 function givemehelp() {
 
 	echo "
