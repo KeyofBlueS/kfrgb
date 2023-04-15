@@ -176,7 +176,7 @@ function check_mode() {
 	for current_mode in ${current_modes}; do
 		if [[ "${current_mode}" = "${mode}" ]]; then
 			mode_check='true'
-			continue
+			break
 		fi
 	done
 	if [[ "${mode_check}" = 'true' ]]; then
