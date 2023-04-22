@@ -1447,6 +1447,7 @@ if [[ "${off}" = 'true' ]]; then
 	mode='static'
 	color='0,0,0'
 	brightness='0'
+	unset randomcolor
 fi
 
 if [[ "${randomcolor}" = 'true' ]]; then
