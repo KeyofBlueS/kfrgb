@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.2.0
+# Version:    0.3.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -189,11 +189,18 @@ function check_mode() {
 function check_parameters() {
 
 	while true; do
+		if [[ "${values_for}" = '--tencolors' ]] || [[ "${values_for}" = '--backcolor' ]] || [[ "${values_for}" = '--color' ]] || [[ "${values_for}" = '--byledcolors' ]]; then
+			if [[ "${randomcolor}" = 'true' ]]; then
+				set_random_colors
+				parameters_check="${selected_colors}"
+			fi
+		fi
 		if [[ -z "${parameters_check}" ]] || [[ "${error_values}" = 'true' ]]; then
 			if [[ "${ask}" = 'true' ]]; then
-				echo
 				if [[ "${values_for}" = '--tencolors' ]] || [[ "${values_for}" = '--backcolor' ]] || [[ "${values_for}" = '--color' ]] || [[ "${values_for}" = '--byledcolors' ]]; then
-					set_yad_colors
+					if [[ "${randomcolor}" != 'true' ]]; then
+						set_colors
+					fi
 					parameters_check="${selected_colors}"
 				elif [[ "${values_for}" = '--speed' ]] || [[ "${values_for}" = '--delay' ]] || [[ "${values_for}" = '--length' ]] || [[ "${values_for}" = '--tencolorsnumber' ]] || [[ "${values_for}" = '--brightness' ]]; then
 					set_parameters
@@ -218,10 +225,38 @@ function check_parameters() {
 	done
 }
 
+function set_colors() {
+
+	echo
+	echo -e "\e[1;32m- Please choose a color for option ${values_for} (leave empty for default ${parameters_check_default}):\e[0m"
+	while true; do
+		echo -e "\e[0;32m1) Choose a color\e[0m"
+		echo -e "\e[0;32m2) Set a random color\e[0m"
+		read -p " choose> " set_color_answer
+		if [[ -z "${set_color_answer}" ]]; then
+			selected_colors="${parameters_check_default}"
+			break
+		else
+			if [[ ! "${set_color_answer}" =~ ^[[:digit:]]+$ ]] || [[ "${set_color_answer}" -gt '2' ]] || [[ "${set_color_answer}" -lt '1' ]]; then
+				echo -e "\e[1;31mInvalid choice!\e[0m"
+				echo
+				sleep '1'
+			elif [[ "${set_color_answer}" -eq '1' ]]; then
+				set_yad_colors
+				break
+			elif [[ "${set_color_answer}" -eq '2' ]]; then
+				set_random_colors
+				break
+			fi
+		fi
+	done
+}
+
 function set_yad_colors() {
 
 	unset selected_colors
 	color_number='1'
+	echo
 	echo -e "\e[0;32m- Please select color for option ${values_for}:\e[0m"
 	while true; do
 		while true; do
@@ -250,8 +285,46 @@ function set_yad_colors() {
 	echo
 }
 
+function set_random_colors() {
+
+	unset random_colors
+	while true; do
+		if [[ "$(echo ${random_colors//,/$' '} | wc -w)" -eq "${max_values}" ]]; then
+			selected_colors="${random_colors}"
+			break
+		elif [[ "$(echo ${random_colors//,/$' '} | wc -w)" -gt "${max_values}" ]]; then
+			exit 1
+		fi
+		random_color_count='0'
+		unset random_color
+		while true; do
+			random_value="$(echo $(( $RANDOM % 255)))"
+			if [[ -z "${random_color}" ]]; then
+				random_color="${random_value}"
+			else
+				random_color+=" ${random_value}"
+			fi
+			random_color_count="$(("${random_color_count}" + 1))"
+			if [[ "${random_color_count}" = '3' ]]; then
+				if [[ "${random_color}" = '0 0 0' ]] || echo "${random_colors}" | grep -q "${random_color}"; then
+					random_color_count='0'
+					unset random_color
+				fi
+			else
+				break
+			fi
+		done
+		if [[ -z "${random_colors}" ]]; then
+			random_colors="${random_color}"
+		else
+			random_colors+=", ${random_color}"
+		fi
+	done
+}
+
 function set_parameters() {
 
+	echo
 	echo -e "\e[1;32m- Please enter a value between ${min_value} and ${max_value} for option ${values_for} (leave empty for default ${parameters_check_default}):\e[0m"
 	while true; do
 		read -rp " enter a value> " selected_parameter
@@ -718,66 +791,65 @@ function set_mode() {
 	echo
 	echo -e "\e[0;32m- Mode: ${mode}\e[0m"
 
-	if [[ "${mode}" = 'static' ]]; then
+	if check_mode "${supported_speed}"; then
+		echo -e "\e[0;32m  - Speed: ${speed}/11\e[0m"
+	fi
+	if check_mode "${supported_delay}"; then
+		echo -e "\e[0;32m  - Delay: ${delay}/${delay_max}\e[0m"
+	fi
+	if check_mode "${supported_length}"; then
+		echo -e "\e[0;32m  - Length: ${length}/${length_max}\e[0m"
+	fi
+	if check_mode "${supported_tencolors}"; then
+		tencolor_1="${tencolor_1_red_hex}${tencolor_1_green_hex}${tencolor_1_blue_hex}"
+		tencolor_2="${tencolor_2_red_hex}${tencolor_2_green_hex}${tencolor_2_blue_hex}"
+		tencolor_3="${tencolor_3_red_hex}${tencolor_3_green_hex}${tencolor_3_blue_hex}"
+		tencolor_4="${tencolor_4_red_hex}${tencolor_4_green_hex}${tencolor_4_blue_hex}"
+		tencolor_5="${tencolor_5_red_hex}${tencolor_5_green_hex}${tencolor_5_blue_hex}"
+		tencolor_6="${tencolor_6_red_hex}${tencolor_6_green_hex}${tencolor_6_blue_hex}"
+		tencolor_7="${tencolor_7_red_hex}${tencolor_7_green_hex}${tencolor_7_blue_hex}"
+		tencolor_8="${tencolor_8_red_hex}${tencolor_8_green_hex}${tencolor_8_blue_hex}"
+		tencolor_9="${tencolor_9_red_hex}${tencolor_9_green_hex}${tencolor_9_blue_hex}"
+		tencolor_10="${tencolor_10_red_hex}${tencolor_10_green_hex}${tencolor_10_blue_hex}"
+		current_tencolor_number='0'
+		for tencolor_all in "${tencolor_1}" "${tencolor_2}" "${tencolor_3}" "${tencolor_4}" "${tencolor_5}" "${tencolor_6}" "${tencolor_7}" "${tencolor_8}" "${tencolor_9}" "${tencolor_10}"; do
+			if [[ -z "${tencolors_all}" ]]; then
+				tencolors_all="${tencolor_all}"
+			else
+				tencolors_all+=" ${tencolor_all}"
+			fi
+			current_tencolor_number="$(("${current_tencolor_number}" + 1))"
+			if [[ "${current_tencolor_number}" = "${tencolorsnumber}" ]]; then
+				break
+			fi
+		done
+		echo "  - Colors will cycle through: "$(perl -e ' foreach $a(@ARGV){print " \e[48:2::".join(":",unpack("C*",pack("H*",$a)))."m  \e[49m >"};print "\n"' ${tencolors_all})""
+	fi
+	if check_mode "${supported_backcolor}"; then
+		back_color="${backcolor_red_hex}${backcolor_green_hex}${backcolor_blue_hex}"
+		echo "  - Back color is: "$(perl -e ' foreach $a(@ARGV){print "[ \e[48:2::".join(":",unpack("C*",pack("H*",$a)))."m  \e[49m ]"};print "\n"' ${back_color})""
+	fi
+	if check_mode "${supported_allcolor}"; then
 		static_color="${allcolor_red_hex}${allcolor_green_hex}${allcolor_blue_hex}"
 		echo "  - Color is: "$(perl -e ' foreach $a(@ARGV){print "[ \e[48:2::".join(":",unpack("C*",pack("H*",$a)))."m  \e[49m ]"};print "\n"' ${static_color} ${static_color} ${static_color} ${static_color} ${static_color} ${static_color} ${static_color} ${static_color} ${static_color} ${static_color} ${static_color} ${static_color})""
-	else
-		if check_mode "${supported_speed}"; then
-			echo -e "\e[0;32m  - Speed: ${speed}/11\e[0m"
-		fi
-		if check_mode "${supported_delay}"; then
-			echo -e "\e[0;32m  - Delay: ${delay}/${delay_max}\e[0m"
-		fi
-		if check_mode "${supported_length}"; then
-			echo -e "\e[0;32m  - Length: ${length}/${length_max}\e[0m"
-		fi
-		if check_mode "${supported_tencolors}"; then
-			tencolor_1="${tencolor_1_red_hex}${tencolor_1_green_hex}${tencolor_1_blue_hex}"
-			tencolor_2="${tencolor_2_red_hex}${tencolor_2_green_hex}${tencolor_2_blue_hex}"
-			tencolor_3="${tencolor_3_red_hex}${tencolor_3_green_hex}${tencolor_3_blue_hex}"
-			tencolor_4="${tencolor_4_red_hex}${tencolor_4_green_hex}${tencolor_4_blue_hex}"
-			tencolor_5="${tencolor_5_red_hex}${tencolor_5_green_hex}${tencolor_5_blue_hex}"
-			tencolor_6="${tencolor_6_red_hex}${tencolor_6_green_hex}${tencolor_6_blue_hex}"
-			tencolor_7="${tencolor_7_red_hex}${tencolor_7_green_hex}${tencolor_7_blue_hex}"
-			tencolor_8="${tencolor_8_red_hex}${tencolor_8_green_hex}${tencolor_8_blue_hex}"
-			tencolor_9="${tencolor_9_red_hex}${tencolor_9_green_hex}${tencolor_9_blue_hex}"
-			tencolor_10="${tencolor_10_red_hex}${tencolor_10_green_hex}${tencolor_10_blue_hex}"
-			current_tencolor_number='0'
-			for tencolor_all in "${tencolor_1}" "${tencolor_2}" "${tencolor_3}" "${tencolor_4}" "${tencolor_5}" "${tencolor_6}" "${tencolor_7}" "${tencolor_8}" "${tencolor_9}" "${tencolor_10}"; do
-				if [[ -z "${tencolors_all}" ]]; then
-					tencolors_all="${tencolor_all}"
-				else
-					tencolors_all+=" ${tencolor_all}"
-				fi
-				current_tencolor_number="$(("${current_tencolor_number}" + 1))"
-				if [[ "${current_tencolor_number}" = "${tencolorsnumber}" ]]; then
-					break
-				fi
-			done
-			echo "  - Colors will cycle through: "$(perl -e ' foreach $a(@ARGV){print " \e[48:2::".join(":",unpack("C*",pack("H*",$a)))."m  \e[49m >"};print "\n"' ${tencolors_all})""
-		fi
-		if check_mode "${supported_backcolor}"; then
-			back_color="${backcolor_red_hex}${backcolor_green_hex}${backcolor_blue_hex}"
-			echo "  - Back color is: "$(perl -e ' foreach $a(@ARGV){print "[ \e[48:2::".join(":",unpack("C*",pack("H*",$a)))."m  \e[49m ]"};print "\n"' ${back_color})""
-		fi
-		if check_mode "${supported_byledcolor}"; then
-			byledcolor_1="${byledcolor_1_red_hex}${byledcolor_1_green_hex}${byledcolor_1_blue_hex}"
-			byledcolor_2="${byledcolor_2_red_hex}${byledcolor_2_green_hex}${byledcolor_2_blue_hex}"
-			byledcolor_3="${byledcolor_3_red_hex}${byledcolor_3_green_hex}${byledcolor_3_blue_hex}"
-			byledcolor_4="${byledcolor_4_red_hex}${byledcolor_4_green_hex}${byledcolor_4_blue_hex}"
-			byledcolor_5="${byledcolor_5_red_hex}${byledcolor_5_green_hex}${byledcolor_5_blue_hex}"
-			byledcolor_6="${byledcolor_6_red_hex}${byledcolor_6_green_hex}${byledcolor_6_blue_hex}"
-			byledcolor_7="${byledcolor_7_red_hex}${byledcolor_7_green_hex}${byledcolor_7_blue_hex}"
-			byledcolor_8="${byledcolor_8_red_hex}${byledcolor_8_green_hex}${byledcolor_8_blue_hex}"
-			byledcolor_9="${byledcolor_9_red_hex}${byledcolor_9_green_hex}${byledcolor_9_blue_hex}"
-			byledcolor_10="${byledcolor_10_red_hex}${byledcolor_10_green_hex}${byledcolor_10_blue_hex}"
-			byledcolor_11="${byledcolor_11_red_hex}${byledcolor_11_green_hex}${byledcolor_11_blue_hex}"
-			byledcolor_12="${byledcolor_12_red_hex}${byledcolor_12_green_hex}${byledcolor_12_blue_hex}"
-			echo "  - Colors are: "$(perl -e ' foreach $a(@ARGV){print "[ \e[48:2::".join(":",unpack("C*",pack("H*",$a)))."m  \e[49m ]"};print "\n"' ${byledcolor_1} ${byledcolor_2} ${byledcolor_3} ${byledcolor_4} ${byledcolor_5} ${byledcolor_6} ${byledcolor_7} ${byledcolor_8} ${byledcolor_9} ${byledcolor_10} ${byledcolor_11} ${byledcolor_12})""
-		fi
-		if check_mode "${supported_direction}"; then
-			echo -e "\e[0;32m  - Direction: ${direction}\e[0m"
-		fi
+	fi
+	if check_mode "${supported_byledcolor}"; then
+		byledcolor_1="${byledcolor_1_red_hex}${byledcolor_1_green_hex}${byledcolor_1_blue_hex}"
+		byledcolor_2="${byledcolor_2_red_hex}${byledcolor_2_green_hex}${byledcolor_2_blue_hex}"
+		byledcolor_3="${byledcolor_3_red_hex}${byledcolor_3_green_hex}${byledcolor_3_blue_hex}"
+		byledcolor_4="${byledcolor_4_red_hex}${byledcolor_4_green_hex}${byledcolor_4_blue_hex}"
+		byledcolor_5="${byledcolor_5_red_hex}${byledcolor_5_green_hex}${byledcolor_5_blue_hex}"
+		byledcolor_6="${byledcolor_6_red_hex}${byledcolor_6_green_hex}${byledcolor_6_blue_hex}"
+		byledcolor_7="${byledcolor_7_red_hex}${byledcolor_7_green_hex}${byledcolor_7_blue_hex}"
+		byledcolor_8="${byledcolor_8_red_hex}${byledcolor_8_green_hex}${byledcolor_8_blue_hex}"
+		byledcolor_9="${byledcolor_9_red_hex}${byledcolor_9_green_hex}${byledcolor_9_blue_hex}"
+		byledcolor_10="${byledcolor_10_red_hex}${byledcolor_10_green_hex}${byledcolor_10_blue_hex}"
+		byledcolor_11="${byledcolor_11_red_hex}${byledcolor_11_green_hex}${byledcolor_11_blue_hex}"
+		byledcolor_12="${byledcolor_12_red_hex}${byledcolor_12_green_hex}${byledcolor_12_blue_hex}"
+		echo "  - Colors are: "$(perl -e ' foreach $a(@ARGV){print "[ \e[48:2::".join(":",unpack("C*",pack("H*",$a)))."m  \e[49m ]"};print "\n"' ${byledcolor_1} ${byledcolor_2} ${byledcolor_3} ${byledcolor_4} ${byledcolor_5} ${byledcolor_6} ${byledcolor_7} ${byledcolor_8} ${byledcolor_9} ${byledcolor_10} ${byledcolor_11} ${byledcolor_12})""
+	fi
+	if check_mode "${supported_direction}"; then
+		echo -e "\e[0;32m  - Direction: ${direction}\e[0m"
 	fi
 	echo -e "\e[0;32m  - Brightness: ${brightness}\e[0m"
 
@@ -1061,7 +1133,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.2.0
+# Version:    0.3.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -1129,6 +1201,9 @@ e.g. '--tencolorsnumber 3' to cycle the first 3 colors out of 10.
 Option --backcolor <r_value,g_value,b_value> accept 3 comma separated values from 0 to 255.
 Use this option to set the background color in the supported mode (slide, wind).
 
+Option --randomcolor will set a random color in the supported mode (slide, wind, static, static_byledcolor, lightspeed, rain, firework).
+This option will take full priority over any color option.
+
 Option --brightness <brightness_value> accept 1 value from 0 to 100.
 Use this option to set the brightness in any mode.
 
@@ -1157,6 +1232,9 @@ set a yellow color to ram 0x61 and 0x63 on i2c-bus 0 (in this case the options -
 
 set a every single led color to ram 0x61 and 0x63 on i2c-bus 0
 # ${kfrgb_name} --ram 61,63 --bus 0 --mode static_byledcolor --byledcolors 255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255
+
+set a every single led to a random color to ram 0x61 and 0x63 on i2c-bus 0
+# ${kfrgb_name} --ram 61,63 --bus 0 --mode static_byledcolor --randomcolor
 
 set mode wind with default parameters to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 # ${kfrgb_name} --ram 61 --bus 0 --mode wind --nowarn
@@ -1212,6 +1290,7 @@ Options:
 -t, --tencolors <values>       Enter 30 comma separated values between 0 and 255.
 -u, --tencolorsnumber <value>  Enter  1 value between 1 and 10. Default is 10.
 -k, --backcolor <value>        Enter  3 comma separated values between 0 and 255.
+-z, --randomcolor              Set a random color.
 -l, --brightness <value>       Enter  1 value between 0 and 100. Default is 80.
 -o, --off                      Turn off all leds.
 -w, --wait <value>             Enter a sleep time between i2cset commands. Default is 0.015.
@@ -1266,7 +1345,6 @@ supported_byledcolor='static_byledcolor breath'
 supported_allcolor='static'
 supported_direction='rainbow spectrum slide wind lightspeed rain firework'
 
-
 for opt in "$@"; do
 	shift
 	case "$opt" in
@@ -1282,6 +1360,7 @@ for opt in "$@"; do
 		'--tencolors')			set -- "$@" '-t' ;;
 		'--tencolorsnumber')	set -- "$@" '-u' ;;
 		'--backcolor')			set -- "$@" '-k' ;;
+		'--randomcolor')		set -- "$@" '-z' ;;
 		'--brightness')			set -- "$@" '-l' ;;
 		'--off')				set -- "$@" '-o' ;;
 		'--wait')				set -- "$@" '-w' ;;
@@ -1292,7 +1371,7 @@ for opt in "$@"; do
 	esac
 done
 
-while getopts "s:m:d:p:e:q:i:c:b:t:u:k:l:ow:nah" opt; do
+while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:nah" opt; do
 	case ${opt} in
 		s ) i2cbus_number="${OPTARG}"
 		;;
@@ -1317,6 +1396,8 @@ while getopts "s:m:d:p:e:q:i:c:b:t:u:k:l:ow:nah" opt; do
 		u ) tencolorsnumber="${OPTARG}"
 		;;
 		k ) backcolor="${OPTARG}"
+		;;
+		z ) randomcolor='true'
 		;;
 		l ) brightness="${OPTARG}"
 		;;
@@ -1366,6 +1447,13 @@ if [[ "${off}" = 'true' ]]; then
 	mode='static'
 	color='0,0,0'
 	brightness='0'
+fi
+
+if [[ "${randomcolor}" = 'true' ]]; then
+	unset color
+	unset byledcolors
+	unset tencolors
+	unset backcolor
 fi
 
 initialize_modes
