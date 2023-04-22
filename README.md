@@ -1,6 +1,6 @@
 # kfrgb
 
-# Version:    0.2.0
+# Version:    0.3.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -68,6 +68,9 @@ e.g. '--tencolorsnumber 3' to cycle the first 3 colors out of 10.
 Option `--backcolor <r_value,g_value,b_value>` accept 3 comma separated values from 0 to 255.
 Use this option to set the background color in the supported mode (slide, wind).
 
+Option `--randomcolor` will set a random color in the supported mode (slide, wind, static, static_byledcolor, lightspeed, rain, firework).
+This option will take full priority over any color option.
+
 Option `--brightness <brightness_value>` accept 1 value from 0 to 100.
 Use this option to set the brightness in any mode.
 
@@ -101,6 +104,10 @@ set a yellow color to ram 0x61 and 0x63 on i2c-bus 0 (in this case the options -
 set a every single led color to ram 0x61 and 0x63 on i2c-bus 0
 
 `# kfrgb --ram 61,63 --bus 0 --mode static_byledcolor --byledcolors 255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255`
+
+set a every single led to a random color to ram 0x61 and 0x63 on i2c-bus 0
+
+`# kfrgb --ram 61,63 --bus 0 --mode static_byledcolor --randomcolor`
 
 set mode wind with default parameters to ram 0x61 on i2c-bus 0 without the warning before apply the settings
 
@@ -169,6 +176,7 @@ Options:
 -t, --tencolors <values>       Enter 30 comma separated values between 0 and 255.
 -u, --tencolorsnumber <value>  Enter  1 value between 1 and 10. Default is 10.
 -k, --backcolor <value>        Enter  3 comma separated values between 0 and 255.
+-z, --randomcolor              Set a random color.
 -l, --brightness <value>       Enter  1 value between 0 and 100. Default is 80.
 -o, --off                      Turn off all leds.
 -w, --wait <value>             Enter a sleep time between i2cset commands. Default is 0.015.
