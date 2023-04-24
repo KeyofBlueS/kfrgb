@@ -81,7 +81,7 @@ Use this option to set a color in mode static.
 Option `--byledcolors <byledcolors_values>` accept 36 comma separated values from 0 to 255. Every three values equals a color (36 values are 12 colors, this ram has 12 leds indeed).
 Use this option to set every single led color in the supported mode (static_byledcolor).
 
-Option `--tencolors <tencolors_values>` accept 30 comma separated values from 0 to 255. Every three values equals a color (30 values are 10 colors)
+Option `--tencolors <tencolors_values>` accept 30 comma separated values from 0 to 255. Every three values equals a color (30 values are 10 colors).
 Use this option to cycle through these colors in the supported mode (slide, wind, lightspeed, rain, firework, teleport, voltage, countdown, rhythm).
 
 Option `--tencolorsnumber <tencolorsnumber_value>` accept 1 value from 0 to 10.
