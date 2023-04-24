@@ -891,7 +891,7 @@ function set_mode() {
 		echo
 		echo -e "\e[1;31m- ### DISCLAIMER\e[0m"
 		echo -e "\e[1;31m- Detection of a Kingston Fury Beast DDR5 RAM on a i2c-bus is not implemented, so you must be really sure about the values you enter for --ram and --bus.\e[0m"
-		echo -e "\e[1;31m- To find out how to retrieve these values, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879\e[0m"
+		echo -e "\e[1;31m- To find out how to retrieve these values, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.\e[0m"
 		echo -e "\e[1;31m- Even if you enter the correct values, the procedure is still risky!\e[0m"
 		echo -e "\e[1;31m- This program can confuse your I2C bus, cause data loss or brick your hardware! Proceed AT YOUR OWN RISK!\e[0m"
 		while true; do
@@ -1245,10 +1245,10 @@ Use this option to set a color in mode static.
 Option --byledcolors <byledcolors_values> accept 36 comma separated values from 0 to 255. Every three values equals a color (36 values are 12 colors, this ram has 12 leds indeed).
 Use this option to set every single led color in the supported mode (static_byledcolor).
 
-Option --tencolors <tencolors_values> accept 30 comma separated values from 0 to 255. Every three values equals a color (30 values are 10 colors)
+Option --tencolors <tencolors_values> accept 30 comma separated values from 0 to 255. Every three values equals a color (30 values are 10 colors).
 Use this option to cycle through these colors in the supported mode (slide, wind, lightspeed, rain, firework, teleport, voltage, countdown, rhythm).
 
-Option --tencolorsnumber <tencolorsnumber_value> accept 1 value from 0 to 10.
+Option --tencolorsnumber <tencolorsnumber_value> accept 1 value from 1 to 10.
 Use this option to set how many colors will cycle the supported mode (slide, wind, lightspeed, rain, firework, teleport, voltage, countdown, rhythm).
 e.g. '--tencolorsnumber 3' to cycle the first 3 colors out of 10.
 
