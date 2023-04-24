@@ -95,7 +95,7 @@ Use this option to set every single led color in the supported mode (static_byle
 Option `--tencolors <tencolors_values>` accept 30 comma separated values from 0 to 255. Every three values equals a color (30 values are 10 colors).
 Use this option to cycle through these colors in the supported mode (slide, wind, lightspeed, rain, firework, teleport, voltage, countdown, rhythm).
 
-Option `--tencolorsnumber <tencolorsnumber_value>` accept 1 value from 0 to 10.
+Option `--tencolorsnumber <tencolorsnumber_value>` accept 1 value from 1 to 10.
 Use this option to set how many colors will cycle the supported mode (slide, wind, lightspeed, rain, firework, teleport, voltage, countdown, rhythm).
 e.g. '--tencolorsnumber 3' to cycle the first 3 colors out of 10.
 
