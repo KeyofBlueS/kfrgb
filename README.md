@@ -29,6 +29,17 @@ As i have one ram stick only, with modes that require two or more ram sticks i'm
 
 - Mode slither is not supported at all.
 
+### INSTALL
+```
+curl -o /tmp/kfrgb.sh 'https://raw.githubusercontent.com/KeyofBlueS/kfrgb/master/kfrgb.sh'
+sudo mkdir -p /opt/kfrgb/
+sudo mv /tmp/kfrgb.sh /opt/kfrgb/
+sudo chown root:root /opt/kfrgb/kfrgb.sh
+sudo chmod 755 /opt/kfrgb/kfrgb.sh
+sudo chmod +x /opt/kfrgb/kfrgb.sh
+sudo ln -s /opt/kfrgb/kfrgb.sh /usr/local/bin/kfrgb
+```
+
 ### USAGE
 The option `--ram <hex_ram_value>` is mandatory. You can enter a single hex value to control a single ram stick or a comma separated set of hex values to control two or more ram sticks.
 If you enter e.g. --ram 61,63 on --bus 0, but you really only have ram 61, ram 63 will be skipped.
