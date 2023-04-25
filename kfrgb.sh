@@ -952,6 +952,8 @@ function config_modes() {
 		speed_default="${speed_default_teleport}"
 		delays_hex="${delays_hex_teleport}"
 		delay_default="${delay_default_teleport}"
+		lengths_hex="${lengths_hex_teleport}"
+		length_default="${length_default_teleport}"
 		tencolors_default="${tencolors_default_teleport}"
 		backcolor_default="${backcolor_default_teleport}"
 		direction_default="${direction_default_teleport,,}"
@@ -1472,14 +1474,14 @@ To set mode parameters you must use options --speed, --delay, --length, --color,
 Take care if a given parameter is supported by a given mode, and be careful to stay between min and max values.
 Nevertheless don't be worried, if no/wrong parameter has been entered, the parameter will simply be set to the default value or not set at all if not supported by the selected mode.
 
-Option --speed accept 1 value from 1 to 11.
-Use this option to set the speed of the effect in the supported mode (rainbow, prism, spectrum, slide, wind, lightspeed, rain, firework).
+Option `--speed` accept 1 value from 1 to 11.
+Use this option to set the speed of the effect in the supported mode (rainbow, prism, spectrum, slide, wind, lightspeed, rain, firework, twilight, teleport, flame, voltage, countdown, rhythm).
 
-Option --delay accept 1 value from 1 to <max_value>. max_value depends on mode.
-Use this option to set the delay of the effect in the supported mode (prism, spectrum, slide, wind, lightspeed).
+Option `--delay` accept 1 value from 1 to <max_value>. max_value depends on mode.
+Use this option to set the delay of the effect in the supported mode (prism, spectrum, slide, wind, lightspeed, rhythm).
 
-Option --length accept 1 value from 1 to <max_value>. max_value depends on mode.
-Use this option to set the length of the effect in the supported mode (slide, wind, lightspeed).
+Option `--length` accept 1 value from 1 to <max_value>. max_value depends on mode.
+Use this option to set the length of the effect in the supported mode (slide, wind, lightspeed, teleport).
 
 One color is expressed with 3 comma separated values for RGB. So 255,255,255 means white; 255,0,0 means red; 0,255,0 means green; 0,0,255 means blue.
 
@@ -1639,7 +1641,7 @@ supported_modes='rainbow prism spectrum slide wind static static_byledcolor ligh
 unsupported_modes='breath breath_byledcolor dynamic slither'
 supported_speed='rainbow prism spectrum slide wind lightspeed rain firework twilight teleport flame voltage countdown rhythm' # breath breath_byledcolor dynamic
 supported_delay='prism spectrum slide wind lightspeed rhythm'
-supported_length='slide wind lightspeed'
+supported_length='slide wind lightspeed teleport'
 supported_tencolors='slide wind lightspeed rain firework teleport voltage countdown rhythm' # breath dynamic
 supported_backcolor='slide wind teleport voltage countdown rhythm'
 supported_byledcolor='static_byledcolor' # breath_byledcolor
