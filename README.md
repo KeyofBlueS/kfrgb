@@ -197,7 +197,7 @@ I prefer the latter because i can visually separate every RGB triplet.
 ```
 Options:
 -s, --bus <i2c_bus_number>      Enter the i2c-bus number.
--m, --ramslots <ramslots_value> Enter the comma separated hex ram values. Mandatory.
+-m, --ramslots <ramslots_value> Enter the comma separated ram slot values. Mandatory.
 -d, --mode <mode>               Enter the name of the mode. Pass 'list' as <mode_name> to get a menu
                                                             where you can choose a mode to set.
 -p, --speed <value>             Enter  1 value between 1 and 11. Default depends on mode.
