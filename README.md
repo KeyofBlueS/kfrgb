@@ -89,19 +89,19 @@ Option `--color <r_value,g_value,b_value>` accept 3 comma separated values from 
 Use this option to set a color in mode static.
 
 Option `--byledcolors <byledcolors_values>` accept 36 comma separated values from 0 to 255. Every three values equals a color (36 values are 12 colors, this ram has 12 leds indeed).
-Use this option to set every single led color in the supported mode (static_byledcolor).
+Use this option to set every single led color in the supported mode (static_byledcolor, breath_byledcolor).
 
 Option `--tencolors <tencolors_values>` accept 30 comma separated values from 0 to 255. Every three values equals a color (30 values are 10 colors).
-Use this option to cycle through these colors in the supported mode (slide, wind, lightspeed, rain, firework, teleport, voltage, countdown, rhythm).
+Use this option to cycle through these colors in the supported mode (slide, wind, lightspeed, rain, firework, breath, dynamic, teleport, voltage, countdown, rhythm).
 
 Option `--tencolorsnumber <tencolorsnumber_value>` accept 1 value from 1 to 10.
-Use this option to set how many colors will cycle the supported mode (slide, wind, lightspeed, rain, firework, teleport, voltage, countdown, rhythm).
+Use this option to set how many colors will cycle the supported mode (slide, wind, lightspeed, rain, firework, breath, dynamic, teleport, voltage, countdown, rhythm).
 e.g. '--tencolorsnumber 3' to cycle the first 3 colors out of 10.
 
 Option `--backcolor <r_value,g_value,b_value>` accept 3 comma separated values from 0 to 255.
 Use this option to set the background color in the supported mode (slide, wind, teleport, voltage, countdown, rhythm).
 
-Option `--randomcolor` will set a random color in the supported mode (slide, wind, static, static_byledcolor, lightspeed, rain, firework, teleport, voltage, countdown, rhythm).
+Option `--randomcolor` will set a random color in the supported mode (slide, wind, static, static_byledcolor, lightspeed, rain, firework, breath, breath_byledcolor, dynamic, teleport, voltage, countdown, rhythm).
 This option will take full priority over any color option.
 
 Option `--brightness <brightness_value>` accept 1 value from 0 to 100.
