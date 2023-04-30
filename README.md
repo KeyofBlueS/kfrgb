@@ -40,7 +40,7 @@ The option `--ramslots <ramslots_value>` is mandatory. The value equals a ram sl
 You can enter a single value to control a single ram stick or a comma separated set of values to control two or more ram sticks.
 If you enter e.g. --ramslots 2,4 on --bus 0, but you really only have ram 2, ram 4 will be skipped.
 
-If the option `--smbus <smbus_number>` is omitted or a wrong/non existent value has been entered, a prompt to select an i2c-bus will be shown.
+If the option `--smbus <smbus_number>` is omitted or a wrong/non existent value has been entered, a prompt to select an SMBus will be shown.
 
 Use the option `--mode <mode_name>` to set a mode.
 Available modes are 'rainbow' 'prism' 'spectrum' 'slide' 'wind' 'static' 'static_byledcolor' 'lightspeed' 'rain' 'firework' 'breath' 'breath_byledcolor' 'dynamic' 'twilight' 'teleport' 'flame' 'voltage' 'countdown' 'rhythm'.
