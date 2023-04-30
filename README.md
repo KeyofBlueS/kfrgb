@@ -36,7 +36,7 @@ sudo ln -s /opt/kfrgb/kfrgb.sh /usr/local/bin/kfrgb
 ```
 
 ### USAGE
-The option --ramslots <ramslots_value> is mandatory. The value equals a ram slot. Accept values from 1 to 8.
+The option `--ramslots <ramslots_value>` is mandatory. The value equals a ram slot. Accept values from 1 to 8.
 You can enter a single value to control a single ram stick or a comma separated set of values to control two or more ram sticks.
 If you enter e.g. --ramslots 2,4 on --bus 0, but you really only have ram 2, ram 4 will be skipped.
 
