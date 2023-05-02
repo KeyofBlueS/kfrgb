@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.6.0
+# Version:    0.6.1
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -1276,6 +1276,23 @@ function set_mode() {
 	fi
 	echo
 	for ramstick_hex in ${ramsticks_hex//,/$' '}; do
+		if [[ "${ramstick_hex}" = "${ramslot_one_hex}" ]]; then
+			ramslot='1'
+		elif [[ "${ramstick_hex}" = "${ramslot_two_hex}" ]]; then
+			ramslot='2'
+		elif [[ "${ramstick_hex}" = "${ramslot_three_hex}" ]]; then
+			ramslot='3'
+		elif [[ "${ramstick_hex}" = "${ramslot_four_hex}" ]]; then
+			ramslot='4'
+		elif [[ "${ramstick_hex}" = "${ramslot_five_hex}" ]]; then
+			ramslot='5'
+		elif [[ "${ramstick_hex}" = "${ramslot_six_hex}" ]]; then
+			ramslot='6'
+		elif [[ "${ramstick_hex}" = "${ramslot_seven_hex}" ]]; then
+			ramslot='7'
+		elif [[ "${ramstick_hex}" = "${ramslot_eight_hex}" ]]; then
+			ramslot='8'
+		fi
 		echo -e "\e[1;33m- Setting mode ${mode} for RAM on slot ${ramslot}\e[0m"
 		i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${inizialize_mode_to}" "0x${inizialize_mode_write}"
 		sleep "${wait}"
@@ -1542,7 +1559,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.6.0
+# Version:    0.6.1
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
