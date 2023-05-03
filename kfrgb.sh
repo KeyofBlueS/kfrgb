@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.6.1
+# Version:    0.6.2
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -1559,7 +1559,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.6.1
+# Version:    0.6.2
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -1619,13 +1619,13 @@ To set mode parameters you must use options --speed, --delay, --length, --color,
 Take care if a given parameter is supported by a given mode, and be careful to stay between min and max values.
 Nevertheless don't be worried, if no/wrong parameter has been entered, the parameter will simply be set to the default value or not set at all if not supported by the selected mode.
 
-Option `--speed` accept 1 value from 1 to 11.
+Option --speed accept 1 value from 1 to 11.
 Use this option to set the speed of the effect in the supported mode (rainbow, prism, spectrum, slide, wind, lightspeed, rain, firework, twilight, teleport, flame, voltage, countdown, rhythm).
 
-Option `--delay` accept 1 value from 1 to <max_value>. max_value depends on mode.
+Option --delay accept 1 value from 1 to <max_value>. max_value depends on mode.
 Use this option to set the delay of the effect in the supported mode (prism, spectrum, slide, wind, lightspeed, rhythm).
 
-Option `--length` accept 1 value from 1 to <max_value>. max_value depends on mode.
+Option --length accept 1 value from 1 to <max_value>. max_value depends on mode.
 Use this option to set the length of the effect in the supported mode (slide, wind, lightspeed, teleport).
 
 One color is expressed with 3 comma separated values for RGB. So 255,255,255 means white; 255,0,0 means red; 0,255,0 means green; 0,0,255 means blue.
