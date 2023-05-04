@@ -114,7 +114,7 @@ Use this option to set the direction of the effect in the supported mode (rainbo
 Option `--ask`, if no/wrong parameter has been entered, will ask for user input instead of automatically set default values.
 For color values a graphical dialog to choose a color will be shown.
 
-Option --simulation will perform a simulation instead of really deploy i2cset commands.
+Option `--simulation` will perform a simulation instead of really deploy i2cset commands.
 
 Option `--wait <wait_value>` will set the sleep time between i2cset commands. Accept 1 integer or decimal value.
 If no\wrong value has been entered, the wait time will default to 0.015.
