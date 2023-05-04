@@ -1,14 +1,14 @@
 
 # kfrgb
 
-# Version:    0.6.2
+# Version:    0.7.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
 
 ### DISCLAIMER
-**Detection of a 'Kingston Fury Beast DDR5 RGB RAM' on a i2c-bus is not implemented, so you must be really sure about the values you enter for --ramslots and --smbus.
-To find out how to retrieve these values, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.
+**Detection of a 'Kingston Fury Beast DDR5 RGB RAM' is not implemented, so you must be really sure if selected RAM on an SMBus is really a 'Kingston Fury Beast DDR5 RGB'.
+For more info, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.
 Even if you enter the correct values, the procedure is still risky!
 This program can confuse your I2C bus, cause data loss or brick your hardware! Proceed AT YOUR OWN RISK!**
 
@@ -36,11 +36,12 @@ sudo ln -s /opt/kfrgb/kfrgb.sh /usr/local/bin/kfrgb
 ```
 
 ### USAGE
-The option `--ramslots <ramslots_value>` is mandatory. The value equals a ram slot. Accept values from 1 to 8.
-You can enter a single value to control a single ram stick or a comma separated set of values to control two or more ram sticks.
-If you enter e.g. --ramslots 2,4 on --bus 0, but you really only have ram 2, ram 4 will be skipped.
+Use the option `--ramslots <ramslots_value>` to select RAM sticks to control. <ramslots_value> equals a RAM slot. Accept values from 1 to 8.
+You can enter a single value to control a single RAM stick or a comma separated set of values to control two or more RAM sticks.
+If you enter e.g. --ramslots 2,4 on --smbus 0, but you really only have RAM 2, RAM 4 will be skipped.
+If you do not enter this option, 8 possible Kingston Fury Beast DDR5 RAM sticks will be searched in the selected SMBus. This is ABSOLUTELY NOT RECOMMENDED as the detection implemented here is very basic and can return false positives! So please make sure to enter this option and that <ramslots_value> equals a Kingston Fury Beast DDR5 RGB RAM!
 
-If the option `--smbus <smbus_number>` is omitted or a wrong/non existent value has been entered, a prompt to select an SMBus will be shown.
+If the option `--smbus <smbus_number>` is omitted, RAM sticks will be searched in all SMBuses that support SMBus Quick Command, but this is not recommended.
 
 Use the option `--mode <mode_name>` to set a mode.
 Available modes are 'rainbow' 'prism' 'spectrum' 'slide' 'wind' 'static' 'static_byledcolor' 'lightspeed' 'rain' 'firework' 'breath' 'breath_byledcolor' 'dynamic' 'twilight' 'teleport' 'flame' 'voltage' 'countdown' 'rhythm'.
@@ -113,6 +114,8 @@ Use this option to set the direction of the effect in the supported mode (rainbo
 Option `--ask`, if no/wrong parameter has been entered, will ask for user input instead of automatically set default values.
 For color values a graphical dialog to choose a color will be shown.
 
+Option --simulation will perform a simulation instead of really deploy i2cset commands.
+
 Option `--wait <wait_value>` will set the sleep time between i2cset commands. Accept 1 integer or decimal value.
 If no\wrong value has been entered, the wait time will default to 0.015.
 Anyway this script will retry (for at most 20 times and then will abort) if an i2cset command fails, so you can keep wait time very low and don't worry about write errors.
@@ -121,7 +124,7 @@ Option `--off` will turn off leds on the ram. This option will take full priorit
 
 ### EXAMPLES
 
-show a menu where you can select an SMBus, then choose a mode to set for RAM 2:
+Search for RAM 2 on all SMBuses, then choose a mode from a list:
 
 `# kfrgb --ramslots 2`
 
@@ -200,7 +203,7 @@ I prefer the latter because i can visually separate every RGB triplet.
 ```
 Options:
 -s, --smbus <smbus_number>      Enter the SMBus number.
--m, --ramslots <ramslots_value> Enter the comma separated RAM slot values. Mandatory.
+-m, --ramslots <ramslots_value> Enter the comma separated RAM slot values.
 -d, --mode <mode>               Enter the name of the mode. Pass 'list' as <mode_name> to get a menu
                                                             where you can choose a mode to set.
 -p, --speed <value>             Enter  1 value between 1 and 11. Default depends on mode.
@@ -217,5 +220,7 @@ Options:
 -o, --off                       Turn off all leds.
 -w, --wait <value>              Enter a sleep time between i2cset commands. Default is 0.015.
 -n, --nowarn                    Apply settings without warning.
+-a, --ask                       Ask for input instead of automatically set default values.
+-S, --simulation                Perform a simulation.
 -h, --help                      Show this help.
 ```
