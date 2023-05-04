@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.6.2
+# Version:    0.7.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -106,7 +106,7 @@ function initialize_modes() {
 	lengths_hex_teleport='01 02 03 04 05 06 07 08 09 0a 0b 0c' # DO NOT EDIT AT ALL! This is a guess, need to find actual hex values set by official app.
 	length_default_teleport='3' # min 1, max 12, default 3
 	tencolors_default_teleport='255 0 0,0 255 0,255 100 0,0 0 255,238 238 0,128 0 128,0 109 119,255 200 0,255 85 255,60 125 255' # 30 comma/space separated values from 0 to 255
-	backcolor_default_rhythm='0 0 0' # 3 comma/space separated values from 0 to 255
+	backcolor_default_teleport='0 0 0' # 3 comma/space separated values from 0 to 255
 	direction_default_teleport='up' # up or down, default up (NOT AVAILABLE IN THE OFFICIAL APP)
 	#flame
 	mode_hex_flame='09' # DO NOT EDIT AT ALL!
@@ -118,13 +118,13 @@ function initialize_modes() {
 	speeds_hex_voltage='30 35 3a 3f 44 49 4e 53 58 5d 62' # DO NOT EDIT AT ALL! This is a guess, need to find actual hex values set by official app.
 	speed_default_voltage='3' # min 1, max 11, default 3
 	tencolors_default_voltage='255 0 0,0 255 0,255 100 0,0 0 255,238 238 0,128 0 128,0 109 119,255 200 0,255 85 255,60 125 255' # 30 comma/space separated values from 0 to 255
-	backcolor_default_rhythm='0 0 0' # 3 comma/space separated values from 0 to 255
+	backcolor_default_voltage='0 0 0' # 3 comma/space separated values from 0 to 255
 	#countdown
 	mode_hex_countdown='08' # DO NOT EDIT AT ALL!
 	speeds_hex_countdown='13 15 17 19 1b 1d 1f 21 23 25 27' # DO NOT EDIT AT ALL! This is a guess, need to find actual hex values set by official app.
 	speed_default_countdown='1' # min 1, max 11, default 1
 	tencolors_default_countdown='255 0 0,0 255 0,255 100 0,0 0 255,238 238 0,128 0 128,0 109 119,255 200 0,255 85 255,60 125 255' # 30 comma/space separated values from 0 to 255
-	backcolor_default_rhythm='0 0 0' # 3 comma/space separated values from 0 to 255
+	backcolor_default_countdown='0 0 0' # 3 comma/space separated values from 0 to 255
 	direction_default_countdown='up' # up or down, default up. This is a guess, need to find actual default value in the official app.
 	#rhythm
 	mode_hex_rhythm='02' # DO NOT EDIT AT ALL!
@@ -169,9 +169,9 @@ function initialize_modes() {
 	ramslot_eight_value_one_check_hex='4f' # DO NOT EDIT AT ALL!
 	ramslot_eight_value_two_check_hex='57' # DO NOT EDIT AT ALL!
 	ramslot_value_expected_hex='78' # DO NOT EDIT AT ALL!
-	#inizialize mode
-	inizialize_mode_write='53' # DO NOT EDIT AT ALL!
-	inizialize_mode_to='08' # DO NOT EDIT AT ALL!
+	#initialize mode
+	initialize_mode_write='53' # DO NOT EDIT AT ALL!
+	initialize_mode_to='08' # DO NOT EDIT AT ALL!
 	set_mode_to='09' # DO NOT EDIT AT ALL!
 	#speed
 	set_speed_to='0e' # DO NOT EDIT AT ALL!
@@ -361,84 +361,91 @@ function check_ramsticks() {
 # the same values, but could at least prevent to improperly use this script on most other devices.
 function check_ramsticks_on_smbus() {
 
-	smbus_detect="$(i2cdetect -y "${smbus_number}")"
-	for ramstick_hex in ${ramsticks_hex//,/$' '}; do
-		if [[ "${ramstick_hex}" = "${ramslot_one_hex}" ]]; then
-			ramslot='1'
-			ramslot_value_one_check_hex="${ramslot_one_value_one_check_hex}"
-			ramslot_value_two_check_hex="${ramslot_one_value_two_check_hex}"
-		elif [[ "${ramstick_hex}" = "${ramslot_two_hex}" ]]; then
-			ramslot='2'
-			ramslot_value_one_check_hex="${ramslot_two_value_one_check_hex}"
-			ramslot_value_two_check_hex="${ramslot_two_value_two_check_hex}"
-		elif [[ "${ramstick_hex}" = "${ramslot_three_hex}" ]]; then
-			ramslot='3'
-			ramslot_value_one_check_hex="${ramslot_three_value_one_check_hex}"
-			ramslot_value_two_check_hex="${ramslot_three_value_two_check_hex}"
-		elif [[ "${ramstick_hex}" = "${ramslot_four_hex}" ]]; then
-			ramslot='4'
-			ramslot_value_one_check_hex="${ramslot_four_value_one_check_hex}"
-			ramslot_value_two_check_hex="${ramslot_four_value_two_check_hex}"
-		elif [[ "${ramstick_hex}" = "${ramslot_five_hex}" ]]; then
-			ramslot='5'
-			ramslot_value_one_check_hex="${ramslot_five_value_one_check_hex}"
-			ramslot_value_two_check_hex="${ramslot_five_value_two_check_hex}"
-		elif [[ "${ramstick_hex}" = "${ramslot_six_hex}" ]]; then
-			ramslot='6'
-			ramslot_value_one_check_hex="${ramslot_six_value_one_check_hex}"
-			ramslot_value_two_check_hex="${ramslot_six_value_two_check_hex}"
-		elif [[ "${ramstick_hex}" = "${ramslot_seven_hex}" ]]; then
-			ramslot='7'
-			ramslot_value_one_check_hex="${ramslot_seven_value_one_check_hex}"
-			ramslot_value_two_check_hex="${ramslot_seven_value_two_check_hex}"
-		elif [[ "${ramstick_hex}" = "${ramslot_eight_hex}" ]]; then
-			ramslot='8'
-			ramslot_value_one_check_hex="${ramslot_eight_value_one_check_hex}"
-			ramslot_value_two_check_hex="${ramslot_eight_value_two_check_hex}"
-		fi
-		if ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramstick_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_one_check_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_two_check_hex}\ "; then
+	for smbus_number_check in ${smbus_numbers}; do
+		if ! echo "${i2cbuses}" | grep -q "^i2c-${smbus_number_check}" || [[ "$(echo "${i2cbuses}" | grep "^i2c-${smbus_number_check}" | awk '{print $2}')" != 'smbus' ]] || [[ "$(i2cdetect -F "${smbus_number_check}" | grep "^SMBus Quick Command" | rev | awk '{print $1}' | rev)" = 'no' ]]; then
 			echo
-			echo -e "\e[1;31m- RAM ${ramslot} (0x${ramstick_hex} - 0x${ramslot_value_one_check_hex} - 0x${ramslot_value_two_check_hex}) not found in i2c-${smbus_number}!\e[0m"
-		else
-			current_ram="$(i2cdump -y "${smbus_number}" "0x${ramslot_value_one_check_hex}" b | grep "^20:")"
-			if [[ "$(echo "${current_ram}" | awk '{print $3}')" = "${ramslot_value_expected_hex}" ]] && [[ "$(echo "${current_ram}" | awk '{print $7}')" = "${ramslot_value_expected_hex}" ]] && [[ "$(echo "${current_ram}" | awk '{print $9}')" = "${ramslot_value_expected_hex}" ]]; then
-				set_ramstick_hex
+			if ! echo "${i2cbuses}" | grep -q "^i2c-${smbus_number_check}"; then
+				echo -e "\e[1;31m- bus i2c-${smbus_number_check}: not found!\e[0m"
+			elif [[ "$(echo "${i2cbuses}" | grep "^i2c-${smbus_number_check}" | awk '{print $2}')" != 'smbus' ]]; then
+				echo -e "\e[1;31m- bus i2c-${smbus_number_check}: is not an SMBus!\e[0m"
+			elif [[ "$(i2cdetect -F "${smbus_number_check}" | grep "^SMBus Quick Command" | rev | awk '{print $1}' | rev)" = 'no' ]]; then
+				echo -e "\e[1;31m- bus i2c-${smbus_number_check}: do not support SMBus Quick Command!\e[0m"
+			fi
+			continue
+		fi
+		echo
+		set_ramstick_hex_deployed='false'
+		smbus_detect="$(i2cdetect -y "${smbus_number_check}")"
+		for ramstick_hex in ${ramsticks_hex//,/$' '}; do
+			if [[ "${ramstick_hex}" = "${ramslot_one_hex}" ]]; then
+				ramslot='1'
+				ramslot_value_one_check_hex="${ramslot_one_value_one_check_hex}"
+				ramslot_value_two_check_hex="${ramslot_one_value_two_check_hex}"
+			elif [[ "${ramstick_hex}" = "${ramslot_two_hex}" ]]; then
+				ramslot='2'
+				ramslot_value_one_check_hex="${ramslot_two_value_one_check_hex}"
+				ramslot_value_two_check_hex="${ramslot_two_value_two_check_hex}"
+			elif [[ "${ramstick_hex}" = "${ramslot_three_hex}" ]]; then
+				ramslot='3'
+				ramslot_value_one_check_hex="${ramslot_three_value_one_check_hex}"
+				ramslot_value_two_check_hex="${ramslot_three_value_two_check_hex}"
+			elif [[ "${ramstick_hex}" = "${ramslot_four_hex}" ]]; then
+				ramslot='4'
+				ramslot_value_one_check_hex="${ramslot_four_value_one_check_hex}"
+				ramslot_value_two_check_hex="${ramslot_four_value_two_check_hex}"
+			elif [[ "${ramstick_hex}" = "${ramslot_five_hex}" ]]; then
+				ramslot='5'
+				ramslot_value_one_check_hex="${ramslot_five_value_one_check_hex}"
+				ramslot_value_two_check_hex="${ramslot_five_value_two_check_hex}"
+			elif [[ "${ramstick_hex}" = "${ramslot_six_hex}" ]]; then
+				ramslot='6'
+				ramslot_value_one_check_hex="${ramslot_six_value_one_check_hex}"
+				ramslot_value_two_check_hex="${ramslot_six_value_two_check_hex}"
+			elif [[ "${ramstick_hex}" = "${ramslot_seven_hex}" ]]; then
+				ramslot='7'
+				ramslot_value_one_check_hex="${ramslot_seven_value_one_check_hex}"
+				ramslot_value_two_check_hex="${ramslot_seven_value_two_check_hex}"
+			elif [[ "${ramstick_hex}" = "${ramslot_eight_hex}" ]]; then
+				ramslot='8'
+				ramslot_value_one_check_hex="${ramslot_eight_value_one_check_hex}"
+				ramslot_value_two_check_hex="${ramslot_eight_value_two_check_hex}"
+			fi
+			if ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramstick_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_one_check_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_two_check_hex}\ "; then
+				echo -e "\e[1;33m- RAM in slot ${ramslot} not found on SMBus i2c-${smbus_number_check}.\e[0m"
 			else
-				echo
-				echo -e "\e[1;31m- RAM ${ramslot} (0x${ramstick_hex}) in i2c-${smbus_number} doesn't seems to be a Kingston Fury Beast DDR5!\e[0m"
-				#while true; do
-					#disclaimer
-					#echo
-					#echo -e "\e[1;31m- Please make 'REALLY' sure RAM in slot ${ramslot} is a 'Kingston Fury Beast DDR5 RGB'!\e[0m"
-					#echo -e "\e[1;31m- do you still want to mess with RAM in slot ${ramslot}?\e[0m"
-					#echo -e "\e[1;32m0) No\e[0m"
-					#echo -e "\e[1;31m1) Yes\e[0m"
-					#read -p " choose> " set_mode_answer
-					#if [[ ! "${set_mode_answer}" =~ ^[[:digit:]]+$ ]] || [[ "${set_mode_answer}" -gt '1' ]] || [[ "${set_mode_answer}" -lt '0' ]]; then
-						#echo -e "\e[1;31mInvalid choice!\e[0m"
-						#sleep '1'
-					#elif [[ "${set_mode_answer}" -eq '0' ]]; then
-						#break
-					#elif [[ "${set_mode_answer}" -eq '1' ]]; then
-						#set_ramstick_hex
-						#break
-					#fi
-				#done
+				current_ram="$(i2cdump -y "${smbus_number_check}" "0x${ramslot_value_one_check_hex}" b | grep "^20:")"
+				if [[ "$(echo "${current_ram}" | awk '{print $3}')" = "${ramslot_value_expected_hex}" ]] && [[ "$(echo "${current_ram}" | awk '{print $7}')" = "${ramslot_value_expected_hex}" ]] && [[ "$(echo "${current_ram}" | awk '{print $9}')" = "${ramslot_value_expected_hex}" ]]; then
+					set_ramstick_hex
+					echo -e "\e[1;32m- RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please make sure this is really a Kingston Fury Beast DDR5 RGB!)\e[0m"
+				else
+					echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury Beast DDR5!\e[0m"
+				fi
+			fi
+			check_hex_values "${ramstick_hex} ${ramslot_value_one_check_hex} ${ramslot_value_two_check_hex} ${ramslot_value_expected_hex}"
+		done
+		if [[ "${set_ramstick_hex_deployed}" = 'true' ]]; then
+			if [[ -z "${smbus_numbers_check}" ]]; then
+				smbus_numbers_check="${smbus_number_check}"
+			else
+				smbus_numbers_check+=" ${smbus_number_check}"
 			fi
 		fi
-		check_hex_values "${ramstick_hex} ${ramslot_value_one_check_hex} ${ramslot_value_two_check_hex} ${ramslot_value_expected_hex}"
 	done
-	if [[ -z "${ramsticks_hex_check}" ]]; then
-		echo
-		echo -e "\e[1;31m- Selected RAM Sticks not found in i2c-${smbus_number}!\e[0m"
+	if [[ "$(echo ${smbus_numbers_check} | wc -w)" -eq '0' ]]; then
 		exit 1
-	else
+	elif [[ "$(echo ${smbus_numbers_check} | wc -w)" -eq '1' ]]; then
+		unset smbus_menu
+		smbus_number="${smbus_numbers_check}"
 		ramsticks_hex=" ${ramsticks_hex_check}"
+	elif [[ "$(echo ${smbus_numbers_check} | wc -w)" -gt '1' ]]; then
+		unset smbus_number
+		smbus_menu='true'
 	fi
 }
 
 function set_ramstick_hex() {
 
+	set_ramstick_hex_deployed='true'
 	if [[ -z "${ramsticks_hex_check}" ]]; then
 		ramsticks_hex_check="${ramstick_hex}"
 	else
@@ -451,10 +458,9 @@ function set_ramstick_hex() {
 	fi
 }
 
-function select_smbus() {
+function find_smbus() {
 
-	echo
-	echo -e "\e[1;32m- Please select an SMBus (or type 'quit' to exit from ${kfrgb_name}:\e[0m"
+	find_smbus_deployed='true'
 	unset n
 	while IFS= read -r smbus; do
 		if [[ "$(echo "${smbus}" | grep -E "^i2c-[[:digit:]]+" | awk '{print $2}')" = 'smbus' ]]; then
@@ -464,27 +470,58 @@ function select_smbus() {
 			else
 				sp1=""
 			fi
-			echo "${sp1}${n}) ${smbus}"
+
+			if [[ -z "${smbuses}" ]]; then
+				smbuses="${sp1}${n}) ${smbus}"
+			else
+				smbuses+="\n${sp1}${n}) ${smbus}"
+			fi
+			if [[ -z "${smbus_numbers}" ]]; then
+				smbus_numbers="${n}"
+			else
+				smbus_numbers+=" ${n}"
+			fi
 		fi
 	done <<< "${i2cbuses}"
 
 	if [[ -z "${n}" ]]; then
 		echo -e "\e[1;31mNo SMBus found!\e[0m"
 		exit 1
-	else
-		while true; do
-			read -p " choose> " smbus_number
-			if [[ "${smbus_number,,}" = 'quit' ]]; then
-				echo -e "\e[1;33mexit\e[0m"
-				exit 0
-			elif [[ ! "${smbus_number}" =~ ^[[:digit:]]+$ ]]; then
-				echo -e "\e[1;31mInvalid choice!\e[0m"
-				sleep '1'
-			else
-				break
-			fi
-		done
 	fi
+}
+
+function select_smbus() {
+
+	if [[ "${find_smbus_deployed}" != 'true' ]]; then
+		find_smbus
+	fi
+	echo
+	echo -e "\e[1;31m- RAM detected on more than one SMBus!\e[0m"
+	echo -e "\e[1;31m- Please select one SMBus (or type 'quit' to exit from ${kfrgb_name}:\e[0m"
+	echo -e "${smbuses}" | grep -E "\ ?\ i2c-(${smbus_numbers_check//' '/$'|'})"
+	while true; do
+		read -p " choose> " smbus_numbers
+		if [[ "${smbus_numbers,,}" = 'quit' ]]; then
+			echo -e "\e[1;33mexit\e[0m"
+			exit 0
+		elif [[ ! "${smbus_numbers}" =~ ^[[:digit:]]+$ ]]; then
+			echo -e "\e[1;31mInvalid choice!\e[0m"
+			sleep '1'
+		else
+			unset smbus_number_selected
+			for smbus_number_select in ${smbus_numbers_check} ; do
+				if [[ "${smbus_number_select}" = "${smbus_numbers}" ]]; then
+					smbus_number_selected='true'
+				fi
+			done
+			if [[ "${smbus_number_selected}" = 'true' ]]; then
+				break
+			else
+				echo -e "\e[1;31mInvalid choice!\e[0m"
+			sleep '1'
+			fi			
+		fi
+	done
 }
 
 function list_modes() {
@@ -1171,10 +1208,19 @@ function set_mode() {
 
 	echo
 	echo -e "\e[0;32m- SMBus: $(echo "${i2cbuses}" | grep "^i2c-${smbus_number}" | sed -e "s/[[:space:]]\+/ /g")\e[0m"
-	echo -e "\e[0;32m- RAM Slots: ${ram_slots}\e[0m"
+	if [[ "$(echo "${ram_slots}" | wc -w)" -gt '1' ]]; then
+		ram_sticks_info='RAMs'
+		ram_slots_info='Slots'
+		verb='are'
+	else
+		ram_sticks_info='RAM'
+		ram_slots_info='Slot'
+		verb='is'
+	fi
+	echo -e "\e[0;32m- ${ram_sticks_info} in ${ram_slots_info}: ${ram_slots}\e[0m"
 	echo
 	echo -e "\e[0;32m- Mode: ${mode}\e[0m"
-	check_hex_values "${inizialize_mode_write} ${inizialize_mode_to} ${finalize_mode_write} ${set_mode_to} ${mode_hex}"
+	check_hex_values "${initialize_mode_write} ${initialize_mode_to} ${finalize_mode_write} ${set_mode_to} ${mode_hex}"
 
 	if check_mode "${supported_speed}"; then
 		echo -e "\e[0;32m  - Speed: ${speed}/11\e[0m"
@@ -1248,7 +1294,7 @@ function set_mode() {
 	check_hex_values "${set_brightness_to} ${brightness_hex}"
 
 	if [[ "${error_hex_values}" = 'true' ]]; then
-		exit 0
+		exit 1
 	fi
 
 	if [[ "${nowarn}" != 'true' ]]; then
@@ -1293,24 +1339,30 @@ function set_mode() {
 		elif [[ "${ramstick_hex}" = "${ramslot_eight_hex}" ]]; then
 			ramslot='8'
 		fi
-		echo -e "\e[1;33m- Setting mode ${mode} for RAM on slot ${ramslot}\e[0m"
-		i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${inizialize_mode_to}" "0x${inizialize_mode_write}"
+		echo -e "\e[1;33m- Setting mode ${mode} for RAM on slot ${ramslot} in SMBus ${smbus_number}\e[0m"
+		echo -e "\e[1;33m * Initializing...\e[0m"
+		i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${initialize_mode_to}" "0x${initialize_mode_write}"
 		sleep "${wait}"
+		echo -e "\e[1;33m * Setting mode...\e[0m"
 		i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_mode_to}" "0x${mode_hex}"
 		sleep "${wait}"
 		if check_mode "${supported_speed}"; then
+			echo -e "\e[1;33m * Setting speed...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_speed_to}" "0x${speed_hex}"
 			sleep "${wait}"
 		fi
 		if check_mode "${supported_delay}"; then
+			echo -e "\e[1;33m * Setting delay...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_delay_to}" "0x${delay_hex}"
 			sleep "${wait}"
 		fi
 		if check_mode "${supported_length}"; then
+			echo -e "\e[1;33m * Setting length...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_length_to}" "0x${length_hex}"
 			sleep "${wait}"
 		fi
 		if check_mode "${supported_tencolors}"; then
+			echo -e "\e[1;33m * Setting tencolors...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolorsnumber_to}" "0x${tencolorsnumber_hex}"
 			sleep "${wait}"
 			
@@ -1405,6 +1457,7 @@ function set_mode() {
 			fi
 		fi
 		if check_mode "${supported_backcolor}"; then
+			echo -e "\e[1;33m * Setting backcolor...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_backcolor_red_to}" "0x${backcolor_red_hex}"
 			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_backcolor_green_to}" "0x${backcolor_green_hex}"
@@ -1413,6 +1466,7 @@ function set_mode() {
 			sleep "${wait}"
 		fi
 		if check_mode "${supported_allcolor}"; then
+			echo -e "\e[1;33m * Setting allcolor...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_allcolor_red_to}" "0x${allcolor_red_hex}"
 			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_allcolor_green_to}" "0x${allcolor_green_hex}"
@@ -1421,6 +1475,7 @@ function set_mode() {
 			sleep "${wait}"
 		fi
 		if check_mode "${supported_byledcolor}"; then
+			echo -e "\e[1;33m * Setting byledcolor...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_1_red_to}" "0x${byledcolor_1_red_hex}"
 			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_1_green_to}" "0x${byledcolor_1_green_hex}"
@@ -1506,12 +1561,16 @@ function set_mode() {
 			sleep "${wait}"
 		fi
 		if check_mode "${supported_direction}"; then
+			echo -e "\e[1;33m * Setting direction...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_direction_to}" "0x${direction_hex}"
 			sleep "${wait}"
 		fi
+		echo -e "\e[1;33m * Setting brightness...\e[0m"
 		i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_brightness_to}" "0x${brightness_hex}"
 		sleep "${wait}"
-		i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${inizialize_mode_to}" "0x${finalize_mode_write}"
+		echo -e "\e[1;33m * Finalizing...\e[0m"
+		i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${initialize_mode_to}" "0x${finalize_mode_write}"
+		echo -e "\e[1;32m * Done!\e[0m"
 	done
 }
 
@@ -1520,8 +1579,13 @@ function i2cset_retry() {
 	command="${@}"
 	retry_count='0'
 	while true; do
-		if i2cset ${command} &>/dev/null; then
+		if [[ "${simulation}" = 'true' ]]; then
+			echo "    i2cset ${command}"
 			break
+		else
+			if i2cset ${command} &>/dev/null; then
+				break
+			fi
 		fi
 		retry_count="$(("${retry_count}" + 1))"
 		if [[ "${retry_count}" = '20' ]]; then
@@ -1532,13 +1596,13 @@ function i2cset_retry() {
 		if [[ "${retry_count}" -le '10' ]]; then
 			sleep 0.030
 		elif [[ "${retry_count}" -ge '11' ]] && [[ "${retry_count}" -le '13' ]]; then
-			#echo -e "\e[1;33m - Please wait...\e[0m"
+			#echo -e "\e[1;33m   - Please wait...\e[0m"
 			sleep 1
 		elif [[ "${retry_count}" -ge '14' ]] && [[ "${retry_count}" -le '16' ]]; then
-			echo -e "\e[1;33m - Please wait...\e[0m"
+			echo -e "\e[1;33m   - Please wait...\e[0m"
 			sleep 3
 		elif [[ "${retry_count}" -ge '17' ]] && [[ "${retry_count}" -le '20' ]]; then
-			echo -e "\e[1;33m - Please wait...\e[0m"
+			echo -e "\e[1;33m   - Please wait...\e[0m"
 			sleep 5
 		fi
 	done
@@ -1548,8 +1612,9 @@ function disclaimer() {
 
 	echo
 	echo -e "\e[1;31m- ### DISCLAIMER\e[0m"
-	echo -e "\e[1;31m- Detection of a 'Kingston Fury Beast DDR5 RGB RAM' on an SMBus is not implemented, so you must be really sure about the values you enter for --ramslots and --smbus.\e[0m"
-	echo -e "\e[1;31m- To find out how to retrieve these values, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.\e[0m"
+	echo -e "\e[1;31m- Detection of a 'Kingston Fury Beast DDR5 RGB RAM' is not implemented, so you must be\e[0m"
+	echo -e "\e[1;31m  really sure if ${ram_sticks_info} in ${ram_slots_info} ${ram_slots} on SMBus ${smbus_number} ${verb} really a 'Kingston Fury Beast DDR5 RGB'.\e[0m"
+	echo -e "\e[1;31m- For more info, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.\e[0m"
 	echo -e "\e[1;31m- Even if you enter the correct values, the procedure is still risky!\e[0m"
 	echo -e "\e[1;31m- This program can confuse your I2C bus, cause data loss or brick your hardware! Proceed AT YOUR OWN RISK!\e[0m"
 }
@@ -1559,14 +1624,14 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.6.2
+# Version:    0.7.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
 
 ### DISCLAIMER
-Detection of a 'Kingston Fury Beast DDR5 RGB RAM' on an SMBus is not implemented, so you must be really sure about the values you enter for --ramslots and --smbus.
-To find out how to retrieve these values, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.
+Detection of a 'Kingston Fury Beast DDR5 RGB RAM' is not implemented, so you must be really sure if selected RAM on an SMBus is really a 'Kingston Fury Beast DDR5 RGB'.
+For more info, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.
 Even if you enter the correct values, the procedure is still risky!
 This program can confuse your I2C bus, cause data loss or brick your hardware! Proceed AT YOUR OWN RISK!
 
@@ -1583,11 +1648,12 @@ Not all modes are fully supported:
 - Modes breath, breath_byledcolor and dynamic: we lack the hex values to set speed, values from other modes doesn't work. These modes will run at their default speed or the last speed set by the official app.
 
 ### USAGE
-The option --ramslots <ramslots_value> is mandatory. The value equals a RAM slot. Accept values from 1 to 8.
+Use the option --ramslots <ramslots_value> to select RAM sticks to control. <ramslots_value> equals a RAM slot. Accept values from 1 to 8.
 You can enter a single value to control a single RAM stick or a comma separated set of values to control two or more RAM sticks.
 If you enter e.g. --ramslots 2,4 on --smbus 0, but you really only have RAM 2, RAM 4 will be skipped.
+If you do not enter this option, 8 possible Kingston Fury Beast DDR5 RAM sticks will be searched in the selected SMBus. This is ABSOLUTELY NOT RECOMMENDED as the detection implemented here is very basic and can return false positives! So please make sure to enter this option and that <ramslots_value> equals a Kingston Fury Beast DDR5 RGB RAM!
 
-If the option --smbus <smbus_number> is omitted or a wrong/non existent value has been entered, a prompt to select an SMBus will be shown.
+If the option --smbus <smbus_number> is omitted, RAM sticks will be searched in all SMBuses that support SMBus Quick Command, but this is not recommended.
 
 Use the option --mode <mode_name> to set a mode.
 Available modes are 'rainbow' 'prism' 'spectrum' 'slide' 'wind' 'static' 'static_byledcolor' 'lightspeed' 'rain' 'firework' 'breath' 'breath_byledcolor' 'dynamic' 'twilight' 'teleport' 'flame' 'voltage' 'countdown' 'rhythm'.
@@ -1658,6 +1724,8 @@ Use this option to set the direction of the effect in the supported mode (rainbo
 Option --ask, if no/wrong parameter has been entered, will ask for user input instead of automatically set default values.
 For color values a graphical dialog to choose a color will be shown.
 
+Option --simulation will perform a simulation instead of really deploy i2cset commands.
+
 Option --wait <wait_value> will set the sleep time between i2cset commands. Accept 1 integer or decimal value.
 If no\wrong value has been entered, the wait time will default to 0.015.
 Anyway this script will retry (for at most 20 times and then will abort) if an i2cset command fails, so you can keep wait time very low and don't worry about write errors.
@@ -1666,7 +1734,7 @@ Option --off will turn off leds on the RAM. This option will take full priority 
 
 ### EXAMPLES
 
-show a menu where you can select an SMBus, then choose a mode to set for RAM 2:
+Search for RAM 2 on all SMBuses, then choose a mode from a list:
 # ${kfrgb_name} --ramslots 2
 
 show a menu where you can choose a mode to set for RAM 2 on SMBus 0:
@@ -1726,7 +1794,7 @@ I prefer the latter because i can visually separate every RGB triplet.
 
 Options:
 -s, --smbus <smbus_number>      Enter the SMBus number.
--m, --ramslots <ramslots_value> Enter the comma separated RAM slot values. Mandatory.
+-m, --ramslots <ramslots_value> Enter the comma separated RAM slot values.
 -d, --mode <mode>               Enter the name of the mode. Pass 'list' as <mode_name> to get a menu
                                                             where you can choose a mode to set.
 -p, --speed <value>             Enter  1 value between 1 and 11. Default depends on mode.
@@ -1743,6 +1811,8 @@ Options:
 -o, --off                       Turn off all leds.
 -w, --wait <value>              Enter a sleep time between i2cset commands. Default is 0.015.
 -n, --nowarn                    Apply settings without warning.
+-a, --ask                       Ask for input instead of automatically set default values.
+-S, --simulation                Perform a simulation.
 -h, --help                      Show this help.
 "
 }
@@ -1814,12 +1884,13 @@ for opt in "$@"; do
 		'--wait')				set -- "$@" '-w' ;;
 		'--nowarn')				set -- "$@" '-n' ;;
 		'--ask')				set -- "$@" '-a' ;;
+		'--simulation')			set -- "$@" '-S' ;;
 		'--help')				set -- "$@" '-h' ;;
 		*)						set -- "$@" "$opt"
 	esac
 done
 
-while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:nah" opt; do
+while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSh" opt; do
 	case ${opt} in
 		s ) smbus_number="${OPTARG}"
 		;;
@@ -1857,6 +1928,8 @@ while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:nah" opt; do
 		;;
 		a ) ask='true'; ask_stored="${ask}"
 		;;
+		S ) simulation='true'
+		;;
 		h ) givemehelp; exit 0
 		;;
 		*) echo -e "\e[1;31m## ERROR\e[0m"; givemehelp; exit 1
@@ -1866,40 +1939,40 @@ done
 initialize
 initialize_modes
 if [[ -z "${ramsticks}" ]]; then
-	echo -e "\e[1;31m- ram: empty value!\e[0m"
+	ramsticks='1,2,3,4,5,6,7,8'
+fi
+
+check_ramsticks
+if [[ "${error_ramstick}" = 'true' ]]; then
 	givemehelp
 	exit 1
-else
-	check_ramsticks
-	if [[ "${error_ramstick}" = 'true' ]]; then
-		givemehelp
-		exit 1
-	fi
 fi
 
 i2cbuses="$(i2cdetect -l)"
-while true; do
-	if [[ -z "${smbus_number}" ]] || ! echo "${i2cbuses}" | grep -q "^i2c-${smbus_number}"; then
-		if [[ -z "${smbus_number}" ]]; then
-			true
-		else
-			echo
-			echo -e "\e[1;31m- bus i2c-${smbus_number}: not found!\e[0m"
-		fi
-		select_smbus
+if [[ -z "${smbus_number}" ]]; then
+	find_smbus
+else
+	if [[ "${smbus_number}" =~ ^[[:digit:]]+$ ]]; then
+		smbus_numbers="${smbus_number}"
 	else
-		if [[ "$(echo "${i2cbuses}" | grep "^i2c-${smbus_number}" | awk '{print $2}')" != 'smbus' ]]; then
-			echo
-			echo -e "\e[1;31m- bus i2c-${smbus_number}: is not an SMBus!\e[0m"
-			unset smbus_number
-		elif [[ "$(i2cdetect -F "${smbus_number}" | grep "^SMBus Quick Command" | rev | awk '{print $1}' | rev)" = 'no' ]]; then
-			echo
-			echo -e "\e[1;31m- bus i2c-${smbus_number}: do not support SMBus Quick Command!\e[0m"
-			unset smbus_number
-		else
-			check_ramsticks_on_smbus
-			break
-		fi
+		echo -e "\e[1;31m- bus i2c-${smbus_number}: invalid!\e[0m"
+		exit 1
+	fi
+fi
+check_ramsticks_on_smbus
+
+while true; do
+	if [[ "${smbus_menu}" = 'true' ]]; then
+		ramsticks_hex="${ramsticks_hex_conf}"
+		unset smbus_numbers
+		unset ramsticks_hex_check
+		unset ram_slots
+		select_smbus
+		unset smbus_numbers_check
+		check_ramsticks_on_smbus
+	fi
+	if [[ "${smbus_menu}" != 'true' ]]; then
+		break
 	fi
 done
 
