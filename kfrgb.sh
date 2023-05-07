@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.8.0
+# Version:    0.8.1
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -381,6 +381,12 @@ function check_ramsticks_on_smbus() {
 		echo
 		set_ramstick_hex_deployed='false'
 		smbus_detect="$(i2cdetect -y "${smbus_number_check}")"
+		if [[ "${debug}" = 'true' ]]; then
+			print_separator
+			echo -e "\e[1;32m- SMBus i2c-${smbus_number_check}:\e[0m"
+			echo "${smbus_detect}"
+			echo
+		fi
 		for ramstick_hex in ${ramsticks_hex//,/$' '}; do
 			if [[ "${ramstick_hex}" = "${ramslot_one_hex}" ]]; then
 				ramslot='1'
@@ -416,19 +422,33 @@ function check_ramsticks_on_smbus() {
 				ramslot_value_two_check_hex="${ramslot_eight_value_two_check_hex}"
 			fi
 			bank=$(("${ramslot}" - 1))
-			if ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramstick_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_one_check_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_two_check_hex}\ "; then
+			unset i2cdump
+			if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -q 'product: KF5' || ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramstick_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_one_check_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_two_check_hex}\ "; then
 				echo -e "\e[1;33m- RAM in slot ${ramslot} not found on SMBus i2c-${smbus_number_check}.\e[0m"
 			else
-				current_ram="$(i2cdump -y "${smbus_number_check}" "0x${ramslot_value_one_check_hex}" b | grep "^20:")"
-				if [[ "$(echo "${current_ram}" | awk '{print $3}')" =~ ^("${ramslot_value_1_expected_hex}"|"${ramslot_value_2_expected_hex}")$ ]] && [[ "$(echo "${current_ram}" | awk '{print $7}')" =~ ^("${ramslot_value_1_expected_hex}"|"${ramslot_value_2_expected_hex}")$ ]] && [[ "$(echo "${current_ram}" | awk '{print $9}')" = "${ramslot_value_1_expected_hex}" ]] && echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' && echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -q 'product: KF5'; then
+				i2cdump="$(i2cdump -y "${smbus_number_check}" "0x${ramslot_value_one_check_hex}" b)"
+				current_ram="$(echo "${i2cdump}" | grep "^20:")"
+				if [[ "$(echo "${current_ram}" | awk '{print $3}')" =~ ^("${ramslot_value_1_expected_hex}"|"${ramslot_value_2_expected_hex}")$ ]] && [[ "$(echo "${current_ram}" | awk '{print $7}')" =~ ^("${ramslot_value_1_expected_hex}"|"${ramslot_value_2_expected_hex}")$ ]] && [[ "$(echo "${current_ram}" | awk '{print $9}')" = "${ramslot_value_1_expected_hex}" ]]; then
 					set_ramstick_hex
 					echo -e "\e[1;32m- RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please make sure this is really a Kingston Fury Beast DDR5 RGB!)\e[0m"
-					echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | tail -n +2 | sed -e "s/          \+/   /g"
+					if [[ "${debug}" != 'true' ]]; then
+						echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | tail -n +2 | sed -e "s/          \+/   /g"
+					fi
 				else
 					echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury Beast DDR5!\e[0m"
 				fi
 			fi
 			check_hex_values "${ramstick_hex} ${ramslot_value_one_check_hex} ${ramslot_value_two_check_hex} ${ramslot_value_expected_hex}"
+			if [[ "${debug}" = 'true' ]]; then
+				if [[ -z "${i2cdump}" ]]; then
+					i2cdump="$(i2cdump -y "${smbus_number_check}" "0x${ramslot_value_one_check_hex}" b)"
+				fi
+				echo "${i2cdump}"
+				echo
+				echo "- lshw:"
+				echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1
+				echo
+			fi
 		done
 		if [[ "${set_ramstick_hex_deployed}" = 'true' ]]; then
 			if [[ -z "${smbus_numbers_check}" ]]; then
@@ -532,7 +552,7 @@ function list_modes() {
 	echo
 	echo -e "\e[1;32m- Please select a mode:\e[0m"
 	echo -e "\e[1;32m 0) exit\e[0m"
-	for exp_mode in ${supported_modes}; do
+	for exp_mode in ${supported_modes} off; do
 		i=$((i + 1))
 		if [ ${i} -le 9 ]; then
 			sp1=" "
@@ -552,6 +572,11 @@ function list_modes() {
 	done
 	if [[ "${selected_mode}" -eq '0' ]]; then
 		exit_zero
+	elif [[ "${selected_mode}" -eq "${i}" ]]; then
+		mode='static'
+		color='0,0,0'
+		brightness='0'
+		unset randomcolor
 	else
 		mode="$(echo "${supported_modes}" | awk "{print $"${selected_mode}"}")"
 	fi
@@ -1624,7 +1649,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.8.0
+# Version:    0.8.1
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -1725,13 +1750,16 @@ Use this option to set the direction of the effect in the supported mode (rainbo
 Option --ask, if no/wrong parameter has been entered, will ask for user input instead of automatically set default values.
 For color values a graphical dialog to choose a color will be shown.
 
+Option --off will turn off leds on the RAM. This option will take full priority over any other option.
+
 Option --simulation will perform a simulation instead of really deploy i2cset commands.
+
+Option --debug will print info useful for debugging, then exits.
+Please use this option and post the output if you want to open an issue on https://github.com/KeyofBlueS/kfrgb/issues
 
 Option --wait <wait_value> will set the sleep time between i2cset commands. Accept 1 integer or decimal value.
 If no\wrong value has been entered, the wait time will default to 0.015.
 Anyway this script will retry (for at most 20 times and then will abort) if an i2cset command fails, so you can keep wait time very low and don't worry about write errors.
-
-Option --off will turn off leds on the RAM. This option will take full priority over any other option.
 
 ### EXAMPLES
 
@@ -1814,6 +1842,7 @@ Options:
 -n, --nowarn                    Apply settings without warning.
 -a, --ask                       Ask for input instead of automatically set default values.
 -S, --simulation                Perform a simulation.
+-D, --debug                     Print info useful for debugging, then exits.
 -h, --help                      Show this help.
 "
 }
@@ -1861,6 +1890,13 @@ function exit_one() {
 	exit 1
 }
 
+function print_separator() {
+
+
+	echo '-------------------------------------------------------------------------------------------------------'
+	echo '-------------------------------------------------------------------------------------------------------'
+}
+
 kfrgb_name="$(echo "${0}" | rev | awk -F'/' '{print $1}' | rev)"
 if ! command -v "${kfrgb_name}" > /dev/null; then
 	kfrgb_name="$(readlink -f "${0}")"
@@ -1900,12 +1936,13 @@ for opt in "$@"; do
 		'--nowarn')				set -- "$@" '-n' ;;
 		'--ask')				set -- "$@" '-a' ;;
 		'--simulation')			set -- "$@" '-S' ;;
+		'--debug')				set -- "$@" '-D' ;;
 		'--help')				set -- "$@" '-h' ;;
 		*)						set -- "$@" "$opt"
 	esac
 done
 
-while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSh" opt; do
+while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSDh" opt; do
 	case ${opt} in
 		s ) smbus_number="${OPTARG}"
 		;;
@@ -1945,6 +1982,8 @@ while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSh" opt; do
 		;;
 		S ) simulation='true'
 		;;
+		D ) debug='true'
+		;;
 		h ) givemehelp; exit 0
 		;;
 		*) givemehelp; exit_one
@@ -1953,7 +1992,7 @@ done
 
 initialize
 initialize_modes
-if [[ -z "${ramsticks}" ]]; then
+if [[ -z "${ramsticks}" ]] || [[ "${debug}" = 'true' ]]; then
 	ramsticks='1,2,3,4,5,6,7,8'
 fi
 
@@ -1964,7 +2003,24 @@ if [[ "${error_ramstick}" = 'true' ]]; then
 fi
 
 lshw="$(lshw -disable device-tree -disable spd -disable memory -disable cpuinfo -disable cpuid -disable pci -disable isapnp -disable pcmcia -disable ide -disable usb -disable scsi -disable network -C memory)"
+if [[ "${debug}" != 'true' ]]; then
+	for bank_number in {0..7}; do
+		if echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' && echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'product: KF5'; then
+			lshw_noram='false'
+			break
+		fi
+	done
+	if [[ "${lshw_noram}" != 'false' ]]; then
+		echo -e "\e[1;31m- No Kingston Fury Beast DDR5 RAM found!\e[0m"
+		exit_one
+	fi
+fi
 i2cbuses="$(i2cdetect -l)"
+if [[ "${debug}" = 'true' ]]; then
+	print_separator
+	echo -e "\e[1;32m- i2c-buses:\e[0m"
+	echo "${i2cbuses}"
+fi
 if [[ -z "${smbus_number}" ]]; then
 	find_smbus
 	check_ramsticks_on_smbus
@@ -1993,6 +2049,11 @@ while true; do
 		break
 	fi
 done
+
+if [[ "${debug}" = 'true' ]]; then
+	print_separator
+	exit 0
+fi
 
 if [[ "${nowarn}" != 'true' ]]; then
 	while true; do
