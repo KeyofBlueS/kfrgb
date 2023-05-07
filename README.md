@@ -1,7 +1,7 @@
 
 # kfrgb
 
-# Version:    0.8.0
+# Version:    0.8.1
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -115,13 +115,16 @@ Use this option to set the direction of the effect in the supported mode (rainbo
 Option `--ask`, if no/wrong parameter has been entered, will ask for user input instead of automatically set default values.
 For color values a graphical dialog to choose a color will be shown.
 
+Option `--off` will turn off leds on the ram. This option will take full priority over any other option.
+
 Option `--simulation` will perform a simulation instead of really deploy i2cset commands.
+
+Option `--debug` will print info useful for debugging, then exits.
+Please use this option and post the output if you want to open an issue on https://github.com/KeyofBlueS/kfrgb/issues
 
 Option `--wait <wait_value>` will set the sleep time between i2cset commands. Accept 1 integer or decimal value.
 If no\wrong value has been entered, the wait time will default to 0.015.
 Anyway this script will retry (for at most 20 times and then will abort) if an i2cset command fails, so you can keep wait time very low and don't worry about write errors.
-
-Option `--off` will turn off leds on the ram. This option will take full priority over any other option.
 
 ### EXAMPLES
 
@@ -223,5 +226,6 @@ Options:
 -n, --nowarn                    Apply settings without warning.
 -a, --ask                       Ask for input instead of automatically set default values.
 -S, --simulation                Perform a simulation.
+-D, --debug                     Print info useful for debugging, then exits.
 -h, --help                      Show this help.
 ```
