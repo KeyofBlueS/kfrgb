@@ -1,7 +1,7 @@
 
 # kfrgb
 
-# Version:    0.7.0
+# Version:    0.8.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -41,7 +41,8 @@ You can enter a single value to control a single RAM stick or a comma separated 
 If you enter e.g. --ramslots 2,4 on --smbus 0, but you really only have RAM 2, RAM 4 will be skipped.
 If you do not enter this option, 8 possible Kingston Fury Beast DDR5 RAM sticks will be searched in the selected SMBus. This is ABSOLUTELY NOT RECOMMENDED as the detection implemented here is very basic and can return false positives! So please make sure to enter this option and that <ramslots_value> equals a Kingston Fury Beast DDR5 RGB RAM!
 
-If the option `--smbus <smbus_number>` is omitted, RAM sticks will be searched in all SMBuses that support SMBus Quick Command, but this is not recommended.
+If the option `--smbus <smbus_number>` is omitted, RAM sticks will be searched in all SMBuses that support SMBus Quick Command.
+If a wrong\non existent <smbus_number> value is entered, a menu in wich you can select an SMBus will be shown.
 
 Use the option `--mode <mode_name>` to set a mode.
 Available modes are 'rainbow' 'prism' 'spectrum' 'slide' 'wind' 'static' 'static_byledcolor' 'lightspeed' 'rain' 'firework' 'breath' 'breath_byledcolor' 'dynamic' 'twilight' 'teleport' 'flame' 'voltage' 'countdown' 'rhythm'.
