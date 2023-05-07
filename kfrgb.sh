@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.7.0
+# Version:    0.8.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -168,7 +168,8 @@ function initialize_modes() {
 	ramslot_eight_hex='67' # DO NOT EDIT AT ALL!
 	ramslot_eight_value_one_check_hex='4f' # DO NOT EDIT AT ALL!
 	ramslot_eight_value_two_check_hex='57' # DO NOT EDIT AT ALL!
-	ramslot_value_expected_hex='78' # DO NOT EDIT AT ALL!
+	ramslot_value_1_expected_hex='78' # DO NOT EDIT AT ALL!
+	ramslot_value_2_expected_hex='b4' # DO NOT EDIT AT ALL!
 	#initialize mode
 	initialize_mode_write='53' # DO NOT EDIT AT ALL!
 	initialize_mode_to='08' # DO NOT EDIT AT ALL!
@@ -356,9 +357,11 @@ function check_ramsticks() {
 # very often address 0x5 is write protected (as in my system), which makes this method useless.
 #
 # This function will check if 0x6[0-7], 0x5[0-7] and 0x4[8-f] exist on selected smbus, and in
-# 0x4[8-f] check if registers &0x21, &0x25 and &0x27 are equal to 78. This is not the correct
-# way to detect a 'Kingston Fury Beast DDR5 RGB RAM' because at least the non RGB variant has
-# the same values, but could at least prevent to improperly use this script on most other devices.
+# 0x4[8-f] check if registers &0x21, &0x25 are equal to 78 or b4 and &0x27 is equal to 78. This is
+# not the correct way to detect a 'Kingston Fury Beast DDR5 RGB RAM' because at least the non RGB
+# variant has the same values, but could at least prevent to improperly use this script on most other devices.
+#
+# An additional check is performed with lshw to check for 'vendor: Kingston' and 'product: KF5*'
 function check_ramsticks_on_smbus() {
 
 	for smbus_number_check in ${smbus_numbers}; do
@@ -371,7 +374,9 @@ function check_ramsticks_on_smbus() {
 			elif [[ "$(i2cdetect -F "${smbus_number_check}" | grep "^SMBus Quick Command" | rev | awk '{print $1}' | rev)" = 'no' ]]; then
 				echo -e "\e[1;31m- bus i2c-${smbus_number_check}: do not support SMBus Quick Command!\e[0m"
 			fi
-			continue
+			unset smbus_number
+			smbus_menu='true'
+			break
 		fi
 		echo
 		set_ramstick_hex_deployed='false'
@@ -410,13 +415,15 @@ function check_ramsticks_on_smbus() {
 				ramslot_value_one_check_hex="${ramslot_eight_value_one_check_hex}"
 				ramslot_value_two_check_hex="${ramslot_eight_value_two_check_hex}"
 			fi
+			bank=$(("${ramslot}" - 1))
 			if ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramstick_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_one_check_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_two_check_hex}\ "; then
 				echo -e "\e[1;33m- RAM in slot ${ramslot} not found on SMBus i2c-${smbus_number_check}.\e[0m"
 			else
 				current_ram="$(i2cdump -y "${smbus_number_check}" "0x${ramslot_value_one_check_hex}" b | grep "^20:")"
-				if [[ "$(echo "${current_ram}" | awk '{print $3}')" = "${ramslot_value_expected_hex}" ]] && [[ "$(echo "${current_ram}" | awk '{print $7}')" = "${ramslot_value_expected_hex}" ]] && [[ "$(echo "${current_ram}" | awk '{print $9}')" = "${ramslot_value_expected_hex}" ]]; then
+				if [[ "$(echo "${current_ram}" | awk '{print $3}')" =~ ^("${ramslot_value_1_expected_hex}"|"${ramslot_value_2_expected_hex}")$ ]] && [[ "$(echo "${current_ram}" | awk '{print $7}')" =~ ^("${ramslot_value_1_expected_hex}"|"${ramslot_value_2_expected_hex}")$ ]] && [[ "$(echo "${current_ram}" | awk '{print $9}')" = "${ramslot_value_1_expected_hex}" ]] && echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' && echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -q 'product: KF5'; then
 					set_ramstick_hex
 					echo -e "\e[1;32m- RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please make sure this is really a Kingston Fury Beast DDR5 RGB!)\e[0m"
+					echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | tail -n +2 | sed -e "s/          \+/   /g"
 				else
 					echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury Beast DDR5!\e[0m"
 				fi
@@ -431,15 +438,8 @@ function check_ramsticks_on_smbus() {
 			fi
 		fi
 	done
-	if [[ "$(echo ${smbus_numbers_check} | wc -w)" -eq '0' ]]; then
-		exit 1
-	elif [[ "$(echo ${smbus_numbers_check} | wc -w)" -eq '1' ]]; then
-		unset smbus_menu
-		smbus_number="${smbus_numbers_check}"
-		ramsticks_hex=" ${ramsticks_hex_check}"
-	elif [[ "$(echo ${smbus_numbers_check} | wc -w)" -gt '1' ]]; then
-		unset smbus_number
-		smbus_menu='true'
+	if [[ "$(echo ${smbus_numbers_check} | wc -w)" -gt '1' ]]; then
+		exit_one
 	fi
 }
 
@@ -462,6 +462,7 @@ function find_smbus() {
 
 	find_smbus_deployed='true'
 	unset n
+	unset smbus_numbers
 	while IFS= read -r smbus; do
 		if [[ "$(echo "${smbus}" | grep -E "^i2c-[[:digit:]]+" | awk '{print $2}')" = 'smbus' ]]; then
 			n="$(echo "${smbus}" | awk '{print $1}' | awk -F'i2c-' '{print $2}')"
@@ -484,9 +485,12 @@ function find_smbus() {
 		fi
 	done <<< "${i2cbuses}"
 
+	smbus_numbers_all="${smbus_numbers}"
+	
+
 	if [[ -z "${n}" ]]; then
 		echo -e "\e[1;31mNo SMBus found!\e[0m"
-		exit 1
+		exit_one
 	fi
 }
 
@@ -496,20 +500,18 @@ function select_smbus() {
 		find_smbus
 	fi
 	echo
-	echo -e "\e[1;31m- RAM detected on more than one SMBus!\e[0m"
-	echo -e "\e[1;31m- Please select one SMBus (or type 'quit' to exit from ${kfrgb_name}:\e[0m"
+	echo -e "\e[1;32m- Please select an SMBus (or type 'quit' to exit from ${kfrgb_name}:\e[0m"
 	echo -e "${smbuses}" | grep -E "\ ?\ i2c-(${smbus_numbers_check//' '/$'|'})"
 	while true; do
 		read -p " choose> " smbus_numbers
 		if [[ "${smbus_numbers,,}" = 'quit' ]]; then
-			echo -e "\e[1;33mexit\e[0m"
-			exit 0
+			exit_zero
 		elif [[ ! "${smbus_numbers}" =~ ^[[:digit:]]+$ ]]; then
 			echo -e "\e[1;31mInvalid choice!\e[0m"
 			sleep '1'
 		else
 			unset smbus_number_selected
-			for smbus_number_select in ${smbus_numbers_check} ; do
+			for smbus_number_select in ${smbus_numbers_all} ; do
 				if [[ "${smbus_number_select}" = "${smbus_numbers}" ]]; then
 					smbus_number_selected='true'
 				fi
@@ -549,8 +551,7 @@ function list_modes() {
 		fi
 	done
 	if [[ "${selected_mode}" -eq '0' ]]; then
-		echo -e "\e[1;33mexit\e[0m"
-		exit 0
+		exit_zero
 	else
 		mode="$(echo "${supported_modes}" | awk "{print $"${selected_mode}"}")"
 	fi
@@ -652,7 +653,7 @@ function set_yad_colors() {
 				selected_color="$((16#${color:1:2})),$((16#${color:3:2})),$((16#${color:5:2}))"
 				break
 			else
-				exit 0
+				exit_zero
 			fi
 		done
 		selected_color_hex="$(printf '%02x' ${selected_color//,/$' '})"
@@ -665,7 +666,7 @@ function set_yad_colors() {
 		if [[ "$(echo ${selected_colors//,/$' '} | wc -w)" -eq "${max_values}" ]]; then
 			break
 		elif [[ "$(echo ${selected_colors//,/$' '} | wc -w)" -gt "${max_values}" ]]; then
-			exit 1
+			exit_one
 		fi
 		color_number="$(("${color_number}" + 1))"
 	done
@@ -680,7 +681,7 @@ function set_random_colors() {
 			selected_colors="${random_colors}"
 			break
 		elif [[ "$(echo ${random_colors//,/$' '} | wc -w)" -gt "${max_values}" ]]; then
-			exit 1
+			exit_one
 		fi
 		random_color_count='0'
 		unset random_color
@@ -1294,7 +1295,7 @@ function set_mode() {
 	check_hex_values "${set_brightness_to} ${brightness_hex}"
 
 	if [[ "${error_hex_values}" = 'true' ]]; then
-		exit 1
+		exit_one
 	fi
 
 	if [[ "${nowarn}" != 'true' ]]; then
@@ -1309,8 +1310,7 @@ function set_mode() {
 				echo -e "\e[1;31mInvalid choice!\e[0m"
 				sleep '1'
 			elif [[ "${set_mode_answer}" -eq '0' ]]; then
-				echo -e "\e[1;33mexit\e[0m"
-				exit 0
+				exit_zero
 			elif [[ "${set_mode_answer}" -eq '1' ]]; then
 				break
 			fi
@@ -1591,7 +1591,7 @@ function i2cset_retry() {
 		if [[ "${retry_count}" = '20' ]]; then
 			echo -e "\e[1;31m- Error: Write failed in command i2cset ${command}\e[0m"
 			echo -e "\e[1;31m- Maximum retries reached, aborting!\e[0m"
-			exit 1
+			exit_one
 		fi
 		if [[ "${retry_count}" -le '10' ]]; then
 			sleep 0.030
@@ -1624,7 +1624,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.7.0
+# Version:    0.8.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -1653,7 +1653,8 @@ You can enter a single value to control a single RAM stick or a comma separated 
 If you enter e.g. --ramslots 2,4 on --smbus 0, but you really only have RAM 2, RAM 4 will be skipped.
 If you do not enter this option, 8 possible Kingston Fury Beast DDR5 RAM sticks will be searched in the selected SMBus. This is ABSOLUTELY NOT RECOMMENDED as the detection implemented here is very basic and can return false positives! So please make sure to enter this option and that <ramslots_value> equals a Kingston Fury Beast DDR5 RGB RAM!
 
-If the option --smbus <smbus_number> is omitted, RAM sticks will be searched in all SMBuses that support SMBus Quick Command, but this is not recommended.
+If the option --smbus <smbus_number> is omitted, RAM sticks will be searched in all SMBuses that support SMBus Quick Command.
+If a wrong\non existent <smbus_number> value is entered, a menu in wich you can select an SMBus will be shown.
 
 Use the option --mode <mode_name> to set a mode.
 Available modes are 'rainbow' 'prism' 'spectrum' 'slide' 'wind' 'static' 'static_byledcolor' 'lightspeed' 'rain' 'firework' 'breath' 'breath_byledcolor' 'dynamic' 'twilight' 'teleport' 'flame' 'voltage' 'countdown' 'rhythm'.
@@ -1821,10 +1822,10 @@ function initialize() {
 
 	if [[ "${EUID}" != '0' ]]; then
 		echo -e "\e[1;31m* ${kfrgb_name} needs to run as root.\e[0m"
-		exit 1
+		exit_one
 	fi
 
-	for bin in i2cset yad perl; do
+	for bin in i2cset yad perl lshw; do
 		if ! command -v "${bin}" >/dev/null; then
 			error_missing='true'
 			if [[ "${bin}" = 'i2cset' ]]; then
@@ -1842,8 +1843,22 @@ function initialize() {
 	if [[ "${error_missing}" = 'true' ]]; then
 		echo -e "\e[1;31m${kfrgb_name} requires \e[1;34m$missing\e[1;31m. Use e.g. \e[1;34msudo apt-get install $missing\e[0m"
 		echo -e "\e[1;31mPlease install the required dependencies then run ${kfrgb_name} again.\e[0m"
-		exit 1
+		exit_one
 	fi
+}
+
+function exit_zero() {
+
+	echo
+	echo -e "\e[1;32mexit\e[0m"
+	exit 0
+}
+
+function exit_one() {
+
+	echo
+	echo -e "\e[1;31mERROR: exit\e[0m"
+	exit 1
 }
 
 kfrgb_name="$(echo "${0}" | rev | awk -F'/' '{print $1}' | rev)"
@@ -1932,7 +1947,7 @@ while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSh" opt; do
 		;;
 		h ) givemehelp; exit 0
 		;;
-		*) echo -e "\e[1;31m## ERROR\e[0m"; givemehelp; exit 1
+		*) givemehelp; exit_one
 	esac
 done
 
@@ -1945,36 +1960,57 @@ fi
 check_ramsticks
 if [[ "${error_ramstick}" = 'true' ]]; then
 	givemehelp
-	exit 1
+	exit_one
 fi
 
+lshw="$(lshw -disable device-tree -disable spd -disable memory -disable cpuinfo -disable cpuid -disable pci -disable isapnp -disable pcmcia -disable ide -disable usb -disable scsi -disable network -C memory)"
 i2cbuses="$(i2cdetect -l)"
 if [[ -z "${smbus_number}" ]]; then
 	find_smbus
+	check_ramsticks_on_smbus
 else
 	if [[ "${smbus_number}" =~ ^[[:digit:]]+$ ]]; then
 		smbus_numbers="${smbus_number}"
+		check_ramsticks_on_smbus
 	else
 		echo -e "\e[1;31m- bus i2c-${smbus_number}: invalid!\e[0m"
-		exit 1
+		smbus_menu='true'
 	fi
 fi
-check_ramsticks_on_smbus
 
 while true; do
 	if [[ "${smbus_menu}" = 'true' ]]; then
 		ramsticks_hex="${ramsticks_hex_conf}"
-		unset smbus_numbers
 		unset ramsticks_hex_check
 		unset ram_slots
 		select_smbus
 		unset smbus_numbers_check
 		check_ramsticks_on_smbus
 	fi
-	if [[ "${smbus_menu}" != 'true' ]]; then
+	if [[ "$(echo ${smbus_numbers_check} | wc -w)" -eq '1' ]]; then
+		smbus_number="${smbus_numbers_check}"
+		ramsticks_hex=" ${ramsticks_hex_check}"
 		break
 	fi
 done
+
+if [[ "${nowarn}" != 'true' ]]; then
+	while true; do
+		echo
+		echo -e "\e[1;31m- do you want to proceed?\e[0m"
+		echo -e "\e[1;32m0) No\e[0m"
+		echo -e "\e[1;31m1) Yes\e[0m"
+		read -p " choose> " set_mode_answer
+		if [[ ! "${set_mode_answer}" =~ ^[[:digit:]]+$ ]] || [[ "${set_mode_answer}" -gt '1' ]] || [[ "${set_mode_answer}" -lt '0' ]]; then
+			echo -e "\e[1;31mInvalid choice!\e[0m"
+			sleep '1'
+		elif [[ "${set_mode_answer}" -eq '0' ]]; then
+			exit_zero
+		elif [[ "${set_mode_answer}" -eq '1' ]]; then
+			break
+		fi
+	done
+fi
 
 if [[ "${off}" = 'true' ]]; then
 	mode='static'
@@ -2000,13 +2036,13 @@ if check_mode "${modes} list"; then
 	if check_mode "${unsupported_modes}"; then
 		echo
 		echo -e "\e[1;31m- Mode ${mode}: currently not supported!\e[0m"
-		exit 1
+		exit_one
 	else
 		config_modes
 	fi
 else
 	echo -e "\e[1;31m- Mode ${mode}: not found!\e[0m"
-	exit 1
+	exit_one
 fi
 
 set_mode
