@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.8.1
+# Version:    0.8.2
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -168,8 +168,8 @@ function initialize_modes() {
 	ramslot_eight_hex='67' # DO NOT EDIT AT ALL!
 	ramslot_eight_value_one_check_hex='4f' # DO NOT EDIT AT ALL!
 	ramslot_eight_value_two_check_hex='57' # DO NOT EDIT AT ALL!
-	ramslot_value_1_expected_hex='78' # DO NOT EDIT AT ALL!
-	ramslot_value_2_expected_hex='b4' # DO NOT EDIT AT ALL!
+	ramslot_register_one_expected_hex='78' # DO NOT EDIT AT ALL!
+	ramslot_register_two_expected_hex='b4' # DO NOT EDIT AT ALL!
 	#initialize mode
 	initialize_mode_write='53' # DO NOT EDIT AT ALL!
 	initialize_mode_to='08' # DO NOT EDIT AT ALL!
@@ -382,7 +382,7 @@ function check_ramsticks_on_smbus() {
 		set_ramstick_hex_deployed='false'
 		smbus_detect="$(i2cdetect -y "${smbus_number_check}")"
 		if [[ "${debug}" = 'true' ]]; then
-			print_separator
+			print_large_separator
 			echo -e "\e[1;32m- SMBus i2c-${smbus_number_check}:\e[0m"
 			echo "${smbus_detect}"
 			echo
@@ -423,31 +423,32 @@ function check_ramsticks_on_smbus() {
 			fi
 			bank=$(("${ramslot}" - 1))
 			unset i2cdump
+			unset ramslot_register_21_detected_hex
+			unset ramslot_register_25_detected_hex
+			unset ramslot_register_27_detected_hex
+			if [[ "${debug}" = 'true' ]]; then
+				print_small_separator
+			fi
 			if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -q 'product: KF5' || ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramstick_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_one_check_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_two_check_hex}\ "; then
 				echo -e "\e[1;33m- RAM in slot ${ramslot} not found on SMBus i2c-${smbus_number_check}.\e[0m"
+				debug_color='1;31'
 			else
-				i2cdump="$(i2cdump -y "${smbus_number_check}" "0x${ramslot_value_one_check_hex}" b)"
-				current_ram="$(echo "${i2cdump}" | grep "^20:")"
-				if [[ "$(echo "${current_ram}" | awk '{print $3}')" =~ ^("${ramslot_value_1_expected_hex}"|"${ramslot_value_2_expected_hex}")$ ]] && [[ "$(echo "${current_ram}" | awk '{print $7}')" =~ ^("${ramslot_value_1_expected_hex}"|"${ramslot_value_2_expected_hex}")$ ]] && [[ "$(echo "${current_ram}" | awk '{print $9}')" = "${ramslot_value_1_expected_hex}" ]]; then
+				detect_registers_hex
+				if [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] || [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
 					set_ramstick_hex
-					echo -e "\e[1;32m- RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please make sure this is really a Kingston Fury Beast DDR5 RGB!)\e[0m"
+					echo -e "\e[1;32m- RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please MAKE REALLY SURE this is a Kingston Fury Beast DDR5 RGB!)\e[0m"
+					debug_color='1;32'
 					if [[ "${debug}" != 'true' ]]; then
 						echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | tail -n +2 | sed -e "s/          \+/   /g"
 					fi
 				else
 					echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury Beast DDR5!\e[0m"
+					debug_color='1;31'
 				fi
 			fi
 			check_hex_values "${ramstick_hex} ${ramslot_value_one_check_hex} ${ramslot_value_two_check_hex} ${ramslot_value_expected_hex}"
 			if [[ "${debug}" = 'true' ]]; then
-				if [[ -z "${i2cdump}" ]]; then
-					i2cdump="$(i2cdump -y "${smbus_number_check}" "0x${ramslot_value_one_check_hex}" b)"
-				fi
-				echo "${i2cdump}"
-				echo
-				echo "- lshw:"
-				echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1
-				echo
+				print_debug_info
 			fi
 		done
 		if [[ "${set_ramstick_hex_deployed}" = 'true' ]]; then
@@ -458,9 +459,70 @@ function check_ramsticks_on_smbus() {
 			fi
 		fi
 	done
-	if [[ "$(echo ${smbus_numbers_check} | wc -w)" -gt '1' ]]; then
+	if [[ "$(echo ${smbus_numbers_check} | wc -w)" -eq '0' ]]; then
+		smbus_menu='true'
+	elif [[ "$(echo ${smbus_numbers_check} | wc -w)" -gt '1' ]]; then
 		exit_one
 	fi
+}
+
+function detect_registers_hex() {
+
+	i2cdump="$(i2cdump -y "${smbus_number_check}" "0x${ramslot_value_one_check_hex}" b)"
+	current_ram="$(echo "${i2cdump}" | grep "^20:")"
+	ramslot_register_21_detected_hex="$(echo "${current_ram}" | awk '{print $3}')"
+	ramslot_register_25_detected_hex="$(echo "${current_ram}" | awk '{print $7}')"
+	ramslot_register_27_detected_hex="$(echo "${current_ram}" | awk '{print $9}')"
+}
+
+function print_debug_info() {
+
+	if [[ -z "${i2cdump}" ]]; then
+		detect_registers_hex
+		debug_color='1;31'
+	fi
+	echo
+	if echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramstick_hex}\ "; then
+		echo -e "\e[1;32m * Address 0x${ramstick_hex} found.\e[0m"
+	else
+		echo -e "\e[1;31m * Address 0x${ramstick_hex} not found.\e[0m"
+	fi
+	if echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_one_check_hex}\ "; then
+		echo -e "\e[1;32m * Address 0x${ramslot_value_one_check_hex} found.\e[0m"
+	else
+		echo -e "\e[1;31m * Address 0x${ramslot_value_one_check_hex} not found.\e[0m"
+	fi
+	if echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_two_check_hex}\ "; then
+		echo -e "\e[1;32m * Address 0x${ramslot_value_two_check_hex} found.\e[0m"
+	else
+		echo -e "\e[1;31m * Address 0x${ramslot_value_two_check_hex} not found.\e[0m"
+	fi
+	echo
+	echo -e "\e[${debug_color}m * i2cdump address 0x${ramslot_value_one_check_hex}:\e[0m"
+	echo "${i2cdump}"
+	echo
+	if [[ "${ramslot_register_21_detected_hex}" =~ ^("${ramslot_register_one_expected_hex}"|"${ramslot_register_two_expected_hex}")$ ]]; then
+		debug_register_21_color='1;32'
+	else
+		debug_register_21_color='1;31'
+	fi
+	if [[ "${ramslot_register_25_detected_hex}" =~ ^("${ramslot_register_one_expected_hex}"|"${ramslot_register_two_expected_hex}")$ ]]; then
+		debug_register_25_color='1;32'
+	else
+		debug_register_25_color='1;31'
+	fi
+	if [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
+		debug_register_27_color='1;32'
+	else
+		debug_register_27_color='1;31'
+	fi
+	echo -e "\e[${debug_register_21_color}m * register 0x21: \e[m0x${ramslot_register_21_detected_hex} \e[${debug_register_21_color}m(expected 0x${ramslot_register_one_expected_hex} or 0x${ramslot_register_two_expected_hex})\e[0m"
+	echo -e "\e[${debug_register_25_color}m * register 0x25: \e[m0x${ramslot_register_25_detected_hex} \e[${debug_register_21_color}m(expected 0x${ramslot_register_one_expected_hex} or 0x${ramslot_register_two_expected_hex})\e[0m"
+	echo -e "\e[${debug_register_27_color}m * register 0x27: \e[m0x${ramslot_register_27_detected_hex} \e[${debug_register_21_color}m(expected 0x${ramslot_register_one_expected_hex})\e[0m"
+	echo
+	echo -e "\e[${debug_color}m * lshw bank ${bank}:\e[0m"
+	echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1
+	echo
 }
 
 function set_ramstick_hex() {
@@ -1649,7 +1711,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.8.1
+# Version:    0.8.2
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -1890,11 +1952,17 @@ function exit_one() {
 	exit 1
 }
 
-function print_separator() {
-
+function print_large_separator() {
 
 	echo '-------------------------------------------------------------------------------------------------------'
 	echo '-------------------------------------------------------------------------------------------------------'
+	echo
+}
+
+function print_small_separator() {
+
+	echo '-------------------------------------------------------------------------------------------------------'
+	echo
 }
 
 kfrgb_name="$(echo "${0}" | rev | awk -F'/' '{print $1}' | rev)"
@@ -2017,7 +2085,8 @@ if [[ "${debug}" != 'true' ]]; then
 fi
 i2cbuses="$(i2cdetect -l)"
 if [[ "${debug}" = 'true' ]]; then
-	print_separator
+	unset smbus_number
+	print_large_separator
 	echo -e "\e[1;32m- i2c-buses:\e[0m"
 	echo "${i2cbuses}"
 fi
@@ -2035,13 +2104,15 @@ else
 fi
 
 while true; do
-	if [[ "${smbus_menu}" = 'true' ]]; then
+	if [[ "${smbus_menu}" = 'true' ]] && [[ "${debug}" != 'true' ]]; then
 		ramsticks_hex="${ramsticks_hex_conf}"
 		unset ramsticks_hex_check
 		unset ram_slots
 		select_smbus
 		unset smbus_numbers_check
 		check_ramsticks_on_smbus
+	elif [[ "${debug}" = 'true' ]]; then
+		break
 	fi
 	if [[ "$(echo ${smbus_numbers_check} | wc -w)" -eq '1' ]]; then
 		smbus_number="${smbus_numbers_check}"
@@ -2051,8 +2122,10 @@ while true; do
 done
 
 if [[ "${debug}" = 'true' ]]; then
-	print_separator
-	exit 0
+	print_large_separator
+	if [[ "${simulation}" != 'true' ]] || [[ "$(echo ${smbus_numbers_check} | wc -w)" -eq '0' ]]; then
+		exit 0
+	fi
 fi
 
 if [[ "${nowarn}" != 'true' ]]; then
@@ -2090,21 +2163,25 @@ fi
 if [[ -z "${mode}" ]]; then
 	mode='list'
 fi
-if check_mode "${modes} list"; then
-	if [[ "${mode}" = 'list' ]]; then
-		list_modes
-	fi
-	if check_mode "${unsupported_modes}"; then
-		echo
-		echo -e "\e[1;31m- Mode ${mode}: currently not supported!\e[0m"
-		exit_one
+while true; do
+	if check_mode "${modes} list"; then
+		if [[ "${mode}" = 'list' ]]; then
+			list_modes
+		fi
+		if check_mode "${unsupported_modes}"; then
+			echo
+			echo -e "\e[1;31m- Mode ${mode}: currently not supported!\e[0m"
+			mode='list'
+		else
+			config_modes
+			break
+		fi
 	else
-		config_modes
+		echo
+		echo -e "\e[1;31m- Mode ${mode}: not found!\e[0m"
+		mode='list'
 	fi
-else
-	echo -e "\e[1;31m- Mode ${mode}: not found!\e[0m"
-	exit_one
-fi
+done
 
 set_mode
 echo
