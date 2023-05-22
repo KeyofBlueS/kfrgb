@@ -1714,7 +1714,7 @@ function disclaimer() {
 
 	echo
 	echo -e "\e[1;31m- ### DISCLAIMER\e[0m"
-	echo -e "\e[1;31m  Please make really sure if ${ram_sticks_info} in ${ram_slots_info} ${ram_slots} on SMBus ${smbus_number} ${verb} really a 'Kingston Fury BEAST\RENEGADE DDR5 RGB'.\e[0m"
+	echo -e "\e[1;31m- Please make really sure if ${ram_sticks_info} in ${ram_slots_info} ${ram_slots} on SMBus ${smbus_number} ${verb} really a 'Kingston Fury BEAST\RENEGADE DDR5 RGB'.\e[0m"
 	echo -e "\e[1;31m- For more info, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.\e[0m"
 	echo -e "\e[1;31m- Even if you enter the correct values, the procedure is still risky!\e[0m"
 	echo -e "\e[1;31m- This program can confuse your I2C bus, cause data loss or brick your hardware! Proceed AT YOUR OWN RISK!\e[0m"
