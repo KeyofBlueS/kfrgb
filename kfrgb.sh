@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.9.0
+# Version:    0.9.1
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -451,6 +451,7 @@ function check_ramsticks_on_smbus() {
 			unset i2cget_model_3_detected_hex
 			unset i2cget_model_4_detected_hex
 			unset i2cget_model_5_detected_hex
+			unset ram_not_found
 			unset model
 			unset submodel
 			if [[ "${debug}" = 'true' ]]; then
@@ -458,6 +459,7 @@ function check_ramsticks_on_smbus() {
 			fi
 			if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -q 'product: KF5' || ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramstick_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_one_check_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_two_check_hex}\ "; then
 				echo -e "\e[1;33m- Kingston Fury DDR5 RAM in slot ${ramslot} not found on SMBus i2c-${smbus_number_check}.\e[0m"
+				ram_not_found='true'
 				debug_color='1;31'
 			else
 				detect_registers_hex
@@ -509,9 +511,11 @@ function detect_registers_hex() {
 	if [[ ! "${wait}" =~ ^[[:digit:]]+(.[[:digit:]]+)?$ ]]; then
 		wait='0.015'
 	fi
-	
-	#i2cset_retry -y "${smbus_number_check}" "0x${ramstick_hex}" "0x${initialize_mode_to}" "0x${initialize_mode_write}"
-	sleep "${wait}"
+	if [[ "${ram_not_found}" != 'true' ]]; then
+		i2cset_retry -y "${smbus_number_check}" "0x${ramstick_hex}" "0x${initialize_mode_to}" "0x${initialize_mode_write}"
+	else
+		sleep "${wait}"
+	fi
 	i2cget_model_1_detected_hex="$(i2cget -y "${smbus_number_check}" "0x${ramstick_hex}" 0x1 i 2 2>/dev/null | awk -F '0x' '{print $3}' | grep -Eo "[0-9a-fA-F]{2}")"
 	sleep "${wait}"
 	i2cget_model_2_detected_hex="$(i2cget -y "${smbus_number_check}" "0x${ramstick_hex}" 0x2 i 2 2>/dev/null | awk -F '0x' '{print $3}' | grep -Eo "[0-9a-fA-F]{2}")"
@@ -522,8 +526,9 @@ function detect_registers_hex() {
 	sleep "${wait}"
 	i2cget_model_5_detected_hex="$(i2cget -y "${smbus_number_check}" "0x${ramstick_hex}" 0x6 i 2 2>/dev/null | awk -F '0x' '{print $3}' | grep -Eo "[0-9a-fA-F]{2}")"
 	sleep "${wait}"
-	#i2cset -y "${smbus_number_check}" "0x${ramstick_hex}" "0x${initialize_mode_to}" "0x${finalize_mode_write}"
-	#sleep "${wait}"
+	if [[ "${ram_not_found}" != 'true' ]]; then
+		i2cset -y "${smbus_number_check}" "0x${ramstick_hex}" "0x${initialize_mode_to}" "0x${finalize_mode_write}"
+	fi
 }
 
 function print_debug_info() {
@@ -1725,7 +1730,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.9.0
+# Version:    0.9.1
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
