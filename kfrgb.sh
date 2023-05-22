@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.8.2
+# Version:    0.9.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -170,6 +170,12 @@ function initialize_modes() {
 	ramslot_eight_value_two_check_hex='57' # DO NOT EDIT AT ALL!
 	ramslot_register_one_expected_hex='78' # DO NOT EDIT AT ALL!
 	ramslot_register_two_expected_hex='b4' # DO NOT EDIT AT ALL!
+	ramslot_model_1_expected_hex='46' # DO NOT EDIT AT ALL!
+	ramslot_model_2_expected_hex='55' # DO NOT EDIT AT ALL!
+	ramslot_model_3_expected_hex='52' # DO NOT EDIT AT ALL!
+	ramslot_model_4_expected_hex='59' # DO NOT EDIT AT ALL!
+	ramslot_model_5_one_expected_hex='10' # DO NOT EDIT AT ALL!
+	ramslot_model_5_two_expected_hex='11' # DO NOT EDIT AT ALL!
 	#initialize mode
 	initialize_mode_write='53' # DO NOT EDIT AT ALL!
 	initialize_mode_to='08' # DO NOT EDIT AT ALL!
@@ -278,6 +284,14 @@ function check_hex_values() {
 
 function check_ramsticks() {
 
+	unset ramslot_one_go
+	unset ramslot_two_go
+	unset ramslot_three_go
+	unset ramslot_four_go
+	unset ramslot_five_go
+	unset ramslot_six_go
+	unset ramslot_seven_go
+	unset ramslot_eight_go
 	for ramstick in ${ramsticks//,/$' '}; do
 		if ! [[ "${ramstick}" =~ ^[[:digit:]]$ ]] || [[ "${ramstick}" -lt '1' ]] || [[ "${ramstick}" -gt '8' ]]; then
 			echo -e "\e[1;31m- option --ramslots: ${ramstick} not valid!\e[0m"
@@ -353,15 +367,21 @@ function check_ramsticks() {
 	fi
 }
 
-# Setting register &0x0b to 0x04 on addresses 0x5[0-7] allows to read the DIMM model name, but
-# very often address 0x5 is write protected (as in my system), which makes this method useless.
-#
-# This function will check if 0x6[0-7], 0x5[0-7] and 0x4[8-f] exist on selected smbus, and in
-# 0x4[8-f] check if registers &0x21, &0x25 are equal to 78 or b4 and &0x27 is equal to 78. This is
-# not the correct way to detect a 'Kingston Fury Beast DDR5 RGB RAM' because at least the non RGB
-# variant has the same values, but could at least prevent to improperly use this script on most other devices.
-#
-# An additional check is performed with lshw to check for 'vendor: Kingston' and 'product: KF5*'
+function about_detection() {
+
+	echo "### ABOUT DETECTION ###
+
+ Setting register &0x0b to 0x04 on addresses 0x5[0-7] allows to read the DIMM model name, but
+ very often address 0x5 is write protected (as in my system), which makes this method useless.
+
+ ${kfrgb_name} will:
+ - check if 0x6[0-7], 0x5[0-7] and 0x4[8-f] exist on an smbus
+ - on 0x6[0-7] check if 0x1 = 0x46, 0x2 = 0x55, 0x3 = 0x52, 0x4 = 0x59, 0x6 = 0x10 (for BEAST) OR = 0x11 (for RENEGADE)
+ - on 0x4[8-f] check if registers &0x21, &0x25 = 78 OR = b4 and &0x27 = 78.
+
+ An additional check is performed with lshw to check for 'vendor: Kingston' and 'product: KF5*'"
+}
+
 function check_ramsticks_on_smbus() {
 
 	for smbus_number_check in ${smbus_numbers}; do
@@ -426,23 +446,35 @@ function check_ramsticks_on_smbus() {
 			unset ramslot_register_21_detected_hex
 			unset ramslot_register_25_detected_hex
 			unset ramslot_register_27_detected_hex
+			unset i2cget_model_1_detected_hex
+			unset i2cget_model_2_detected_hex
+			unset i2cget_model_3_detected_hex
+			unset i2cget_model_4_detected_hex
+			unset i2cget_model_5_detected_hex
+			unset model
+			unset submodel
 			if [[ "${debug}" = 'true' ]]; then
 				print_small_separator
 			fi
 			if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -q 'product: KF5' || ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramstick_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_one_check_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_two_check_hex}\ "; then
-				echo -e "\e[1;33m- RAM in slot ${ramslot} not found on SMBus i2c-${smbus_number_check}.\e[0m"
+				echo -e "\e[1;33m- Kingston Fury DDR5 RAM in slot ${ramslot} not found on SMBus i2c-${smbus_number_check}.\e[0m"
 				debug_color='1;31'
 			else
 				detect_registers_hex
-				if [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] || [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
+				if [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] || [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
+					if [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_one_expected_hex}" ]]; then
+						submodel='BEAST'
+					elif [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_two_expected_hex}" ]]; then
+						submodel='RENEGADE'
+					fi
 					set_ramstick_hex
-					echo -e "\e[1;32m- RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please MAKE REALLY SURE this is a Kingston Fury Beast DDR5 RGB!)\e[0m"
+					echo -e "\e[1;32m- Kingston Fury DDR5 RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please MAKE REALLY SURE this is a Kingston Fury ${submodel} DDR5 RGB!)\e[0m"
 					debug_color='1;32'
 					if [[ "${debug}" != 'true' ]]; then
 						echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | tail -n +2 | sed -e "s/          \+/   /g"
 					fi
 				else
-					echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury Beast DDR5!\e[0m"
+					echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury BEAST\RENEGADE DDR5!\e[0m"
 					debug_color='1;31'
 				fi
 			fi
@@ -473,6 +505,25 @@ function detect_registers_hex() {
 	ramslot_register_21_detected_hex="$(echo "${current_ram}" | awk '{print $3}')"
 	ramslot_register_25_detected_hex="$(echo "${current_ram}" | awk '{print $7}')"
 	ramslot_register_27_detected_hex="$(echo "${current_ram}" | awk '{print $9}')"
+
+	if [[ ! "${wait}" =~ ^[[:digit:]]+(.[[:digit:]]+)?$ ]]; then
+		wait='0.015'
+	fi
+	
+	#i2cset_retry -y "${smbus_number_check}" "0x${ramstick_hex}" "0x${initialize_mode_to}" "0x${initialize_mode_write}"
+	sleep "${wait}"
+	i2cget_model_1_detected_hex="$(i2cget -y "${smbus_number_check}" "0x${ramstick_hex}" 0x1 i 2 2>/dev/null | awk -F '0x' '{print $3}' | grep -Eo "[0-9a-fA-F]{2}")"
+	sleep "${wait}"
+	i2cget_model_2_detected_hex="$(i2cget -y "${smbus_number_check}" "0x${ramstick_hex}" 0x2 i 2 2>/dev/null | awk -F '0x' '{print $3}' | grep -Eo "[0-9a-fA-F]{2}")"
+	sleep "${wait}"
+	i2cget_model_3_detected_hex="$(i2cget -y "${smbus_number_check}" "0x${ramstick_hex}" 0x3 i 2 2>/dev/null | awk -F '0x' '{print $3}' | grep -Eo "[0-9a-fA-F]{2}")"
+	sleep "${wait}"
+	i2cget_model_4_detected_hex="$(i2cget -y "${smbus_number_check}" "0x${ramstick_hex}" 0x4 i 2 2>/dev/null | awk -F '0x' '{print $3}' | grep -Eo "[0-9a-fA-F]{2}")"
+	sleep "${wait}"
+	i2cget_model_5_detected_hex="$(i2cget -y "${smbus_number_check}" "0x${ramstick_hex}" 0x6 i 2 2>/dev/null | awk -F '0x' '{print $3}' | grep -Eo "[0-9a-fA-F]{2}")"
+	sleep "${wait}"
+	#i2cset -y "${smbus_number_check}" "0x${ramstick_hex}" "0x${initialize_mode_to}" "0x${finalize_mode_write}"
+	#sleep "${wait}"
 }
 
 function print_debug_info() {
@@ -482,23 +533,66 @@ function print_debug_info() {
 		debug_color='1;31'
 	fi
 	echo
-	if echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramstick_hex}\ "; then
+	if echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}' | grep -q "\ ${ramstick_hex}\ "; then
 		echo -e "\e[1;32m * Address 0x${ramstick_hex} found.\e[0m"
 	else
 		echo -e "\e[1;31m * Address 0x${ramstick_hex} not found.\e[0m"
 	fi
-	if echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_one_check_hex}\ "; then
+	if echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}' | grep -q "\ ${ramslot_value_one_check_hex}\ "; then
 		echo -e "\e[1;32m * Address 0x${ramslot_value_one_check_hex} found.\e[0m"
 	else
 		echo -e "\e[1;31m * Address 0x${ramslot_value_one_check_hex} not found.\e[0m"
 	fi
-	if echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_two_check_hex}\ "; then
+	if echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}' | grep -q "\ ${ramslot_value_two_check_hex}\ "; then
 		echo -e "\e[1;32m * Address 0x${ramslot_value_two_check_hex} found.\e[0m"
 	else
 		echo -e "\e[1;31m * Address 0x${ramslot_value_two_check_hex} not found.\e[0m"
 	fi
 	echo
-	echo -e "\e[${debug_color}m * i2cdump address 0x${ramslot_value_one_check_hex}:\e[0m"
+	if [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]]; then
+		debug_model_1_color='1;32'
+	else
+		debug_model_1_color='1;31'
+	fi
+	if [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]]; then
+		debug_model_2_color='1;32'
+	else
+		debug_model_2_color='1;31'
+	fi
+	if [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]]; then
+		debug_model_3_color='1;32'
+	else
+		debug_model_3_color='1;31'
+	fi
+	if [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]]; then
+		debug_model_4_color='1;32'
+	else
+		debug_model_4_color='1;31'
+	fi
+	if [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]]; then
+		if [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_one_expected_hex}" ]]; then
+			submodel='BEAST'
+		elif [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_two_expected_hex}" ]]; then
+			submodel='RENEGADE'
+		fi
+		debug_model_5_color='1;32'
+	else
+		debug_model_5_color='1;31'
+	fi
+	echo -e "\e[${debug_model_1_color}m * i2cget ${smbus_number_check} 0x${ramstick_hex} 0x1 i 2: \e[m0x${i2cget_model_1_detected_hex} \e[${debug_model_1_color}m(expected 0x${ramslot_model_1_expected_hex})\e[0m"
+	echo -e "\e[${debug_model_2_color}m * i2cget ${smbus_number_check} 0x${ramstick_hex} 0x2 i 2: \e[m0x${i2cget_model_2_detected_hex} \e[${debug_model_2_color}m(expected 0x${ramslot_model_2_expected_hex})\e[0m"
+	echo -e "\e[${debug_model_3_color}m * i2cget ${smbus_number_check} 0x${ramstick_hex} 0x3 i 2: \e[m0x${i2cget_model_3_detected_hex} \e[${debug_model_3_color}m(expected 0x${ramslot_model_3_expected_hex})\e[0m"
+	echo -e "\e[${debug_model_4_color}m * i2cget ${smbus_number_check} 0x${ramstick_hex} 0x4 i 2: \e[m0x${i2cget_model_4_detected_hex} \e[${debug_model_4_color}m(expected 0x${ramslot_model_4_expected_hex})\e[0m"
+	echo -e "\e[${debug_model_5_color}m * i2cget ${smbus_number_check} 0x${ramstick_hex} 0x6 i 2: \e[m0x${i2cget_model_5_detected_hex} \e[${debug_model_5_color}m(expected 0x${ramslot_model_5_one_expected_hex} for BEAST or 0x${ramslot_model_5_two_expected_hex} for RENEGADE)\e[0m"
+	echo
+	if [[ -n "${i2cget_model_1_detected_hex}" ]] && [[ -n "${i2cget_model_2_detected_hex}" ]] && [[ -n "${i2cget_model_3_detected_hex}" ]] && [[ -n "${i2cget_model_4_detected_hex}" ]] && [[ -n "${i2cget_model_5_detected_hex}" ]]; then
+		model="$(printf "\x${i2cget_model_1_detected_hex}\x${i2cget_model_2_detected_hex}\x${i2cget_model_3_detected_hex}\x${i2cget_model_4_detected_hex} ${submodel}")"
+		echo -e "\e[${debug_color}m * model: ${model}\e[0m"
+	else
+		echo -e "\e[${debug_color}m * model: UNKNOWN\e[0m"
+	fi
+	echo
+	echo -e "\e[${debug_color}m * i2cdump ${smbus_number_check} 0x${ramslot_value_one_check_hex} b (check registers 0x21, 0x25, 0x27):\e[0m"
 	echo "${i2cdump}"
 	echo
 	if [[ "${ramslot_register_21_detected_hex}" =~ ^("${ramslot_register_one_expected_hex}"|"${ramslot_register_two_expected_hex}")$ ]]; then
@@ -1429,232 +1523,152 @@ function set_mode() {
 		echo -e "\e[1;33m- Setting mode ${mode} for RAM on slot ${ramslot} in SMBus ${smbus_number}\e[0m"
 		echo -e "\e[1;33m * Initializing...\e[0m"
 		i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${initialize_mode_to}" "0x${initialize_mode_write}"
-		sleep "${wait}"
 		echo -e "\e[1;33m * Setting mode...\e[0m"
 		i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_mode_to}" "0x${mode_hex}"
-		sleep "${wait}"
 		if check_mode "${supported_speed}"; then
 			echo -e "\e[1;33m * Setting speed...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_speed_to}" "0x${speed_hex}"
-			sleep "${wait}"
 		fi
 		if check_mode "${supported_delay}"; then
 			echo -e "\e[1;33m * Setting delay...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_delay_to}" "0x${delay_hex}"
-			sleep "${wait}"
 		fi
 		if check_mode "${supported_length}"; then
 			echo -e "\e[1;33m * Setting length...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_length_to}" "0x${length_hex}"
-			sleep "${wait}"
 		fi
 		if check_mode "${supported_tencolors}"; then
 			echo -e "\e[1;33m * Setting tencolors...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolorsnumber_to}" "0x${tencolorsnumber_hex}"
-			sleep "${wait}"
 			
 			if [[ '1' -le "${tencolorsnumber}" ]]; then
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_1_red_to}" "0x${tencolor_1_red_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_1_green_to}" "0x${tencolor_1_green_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_1_blue_to}" "0x${tencolor_1_blue_hex}"
-				sleep "${wait}"
 			fi
 
 			if [[ '2' -le "${tencolorsnumber}" ]]; then
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_2_red_to}" "0x${tencolor_2_red_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_2_green_to}" "0x${tencolor_2_green_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_2_blue_to}" "0x${tencolor_2_blue_hex}"
-				sleep "${wait}"
 			fi
 
 			if [[ '3' -le "${tencolorsnumber}" ]]; then
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_3_red_to}" "0x${tencolor_3_red_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_3_green_to}" "0x${tencolor_3_green_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_3_blue_to}" "0x${tencolor_3_blue_hex}"
-				sleep "${wait}"
 			fi
 
 			if [[ '4' -le "${tencolorsnumber}" ]]; then
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_4_red_to}" "0x${tencolor_4_red_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_4_green_to}" "0x${tencolor_4_green_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_4_blue_to}" "0x${tencolor_4_blue_hex}"
-				sleep "${wait}"
 			fi
 
 			if [[ '5' -le "${tencolorsnumber}" ]]; then
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_5_red_to}" "0x${tencolor_5_red_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_5_green_to}" "0x${tencolor_5_green_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_5_blue_to}" "0x${tencolor_5_blue_hex}"
-				sleep "${wait}"
 			fi
 
 			if [[ '6' -le "${tencolorsnumber}" ]]; then
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_6_red_to}" "0x${tencolor_6_red_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_6_green_to}" "0x${tencolor_6_green_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_6_blue_to}" "0x${tencolor_6_blue_hex}"
-				sleep "${wait}"
 			fi
 
 			if [[ '7' -le "${tencolorsnumber}" ]]; then
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_7_red_to}" "0x${tencolor_7_red_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_7_green_to}" "0x${tencolor_7_green_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_7_blue_to}" "0x${tencolor_7_blue_hex}"
-				sleep "${wait}"
 			fi
 
 			if [[ '8' -le "${tencolorsnumber}" ]]; then
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_8_red_to}" "0x${tencolor_8_red_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_8_green_to}" "0x${tencolor_8_green_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_8_blue_to}" "0x${tencolor_8_blue_hex}"
-				sleep "${wait}"
 			fi
 
 			if [[ '9' -le "${tencolorsnumber}" ]]; then
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_9_red_to}" "0x${tencolor_9_red_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_9_green_to}" "0x${tencolor_9_green_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_9_blue_to}" "0x${tencolor_9_blue_hex}"
-				sleep "${wait}"
 			fi
 
 			if [[ '10' -le "${tencolorsnumber}" ]]; then
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_10_red_to}" "0x${tencolor_10_red_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_10_green_to}" "0x${tencolor_10_green_hex}"
-				sleep "${wait}"
 				i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_tencolor_10_blue_to}" "0x${tencolor_10_blue_hex}"
-				sleep "${wait}"
 			fi
 		fi
 		if check_mode "${supported_backcolor}"; then
 			echo -e "\e[1;33m * Setting backcolor...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_backcolor_red_to}" "0x${backcolor_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_backcolor_green_to}" "0x${backcolor_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_backcolor_blue_to}" "0x${backcolor_blue_hex}"
-			sleep "${wait}"
 		fi
 		if check_mode "${supported_allcolor}"; then
 			echo -e "\e[1;33m * Setting allcolor...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_allcolor_red_to}" "0x${allcolor_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_allcolor_green_to}" "0x${allcolor_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_allcolor_blue_to}" "0x${allcolor_blue_hex}"
-			sleep "${wait}"
 		fi
 		if check_mode "${supported_byledcolor}"; then
 			echo -e "\e[1;33m * Setting byledcolor...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_1_red_to}" "0x${byledcolor_1_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_1_green_to}" "0x${byledcolor_1_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_1_blue_to}" "0x${byledcolor_1_blue_hex}"
-			sleep "${wait}"
 
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_2_red_to}" "0x${byledcolor_2_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_2_green_to}" "0x${byledcolor_2_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_2_blue_to}" "0x${byledcolor_2_blue_hex}"
-			sleep "${wait}"
 
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_3_red_to}" "0x${byledcolor_3_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_3_green_to}" "0x${byledcolor_3_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_3_blue_to}" "0x${byledcolor_3_blue_hex}"
-			sleep "${wait}"
 
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_4_red_to}" "0x${byledcolor_4_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_4_green_to}" "0x${byledcolor_4_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_4_blue_to}" "0x${byledcolor_4_blue_hex}"
-			sleep "${wait}"
 
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_5_red_to}" "0x${byledcolor_5_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_5_green_to}" "0x${byledcolor_5_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_5_blue_to}" "0x${byledcolor_5_blue_hex}"
-			sleep "${wait}"
 
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_6_red_to}" "0x${byledcolor_6_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_6_green_to}" "0x${byledcolor_6_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_6_blue_to}" "0x${byledcolor_6_blue_hex}"
-			sleep "${wait}"
 
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_7_red_to}" "0x${byledcolor_7_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_7_green_to}" "0x${byledcolor_7_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_7_blue_to}" "0x${byledcolor_7_blue_hex}"
-			sleep "${wait}"
 
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_8_red_to}" "0x${byledcolor_8_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_8_green_to}" "0x${byledcolor_8_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_8_blue_to}" "0x${byledcolor_8_blue_hex}"
-			sleep "${wait}"
 
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_9_red_to}" "0x${byledcolor_9_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_9_green_to}" "0x${byledcolor_9_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_9_blue_to}" "0x${byledcolor_9_blue_hex}"
-			sleep "${wait}"
 
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_10_red_to}" "0x${byledcolor_10_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_10_green_to}" "0x${byledcolor_10_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_10_blue_to}" "0x${byledcolor_10_blue_hex}"
-			sleep "${wait}"
 
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_11_red_to}" "0x${byledcolor_11_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_11_green_to}" "0x${byledcolor_11_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_11_blue_to}" "0x${byledcolor_11_blue_hex}"
-			sleep "${wait}"
 
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_12_red_to}" "0x${byledcolor_12_red_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_12_green_to}" "0x${byledcolor_12_green_hex}"
-			sleep "${wait}"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_byledcolor_12_blue_to}" "0x${byledcolor_12_blue_hex}"
-			sleep "${wait}"
 		fi
 		if check_mode "${supported_direction}"; then
 			echo -e "\e[1;33m * Setting direction...\e[0m"
 			i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_direction_to}" "0x${direction_hex}"
-			sleep "${wait}"
 		fi
 		echo -e "\e[1;33m * Setting brightness...\e[0m"
 		i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${set_brightness_to}" "0x${brightness_hex}"
-		sleep "${wait}"
 		echo -e "\e[1;33m * Finalizing...\e[0m"
 		i2cset_retry -y "${smbus_number}" "0x${ramstick_hex}" "0x${initialize_mode_to}" "0x${finalize_mode_write}"
 		echo -e "\e[1;32m * Done!\e[0m"
@@ -1671,6 +1685,7 @@ function i2cset_retry() {
 			break
 		else
 			if i2cset ${command} &>/dev/null; then
+				sleep "${wait}"
 				break
 			fi
 		fi
@@ -1699,8 +1714,7 @@ function disclaimer() {
 
 	echo
 	echo -e "\e[1;31m- ### DISCLAIMER\e[0m"
-	echo -e "\e[1;31m- Detection of a 'Kingston Fury Beast DDR5 RGB RAM' is not implemented, so you must be\e[0m"
-	echo -e "\e[1;31m  really sure if ${ram_sticks_info} in ${ram_slots_info} ${ram_slots} on SMBus ${smbus_number} ${verb} really a 'Kingston Fury Beast DDR5 RGB'.\e[0m"
+	echo -e "\e[1;31m  Please make really sure if ${ram_sticks_info} in ${ram_slots_info} ${ram_slots} on SMBus ${smbus_number} ${verb} really a 'Kingston Fury BEAST\RENEGADE DDR5 RGB'.\e[0m"
 	echo -e "\e[1;31m- For more info, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.\e[0m"
 	echo -e "\e[1;31m- Even if you enter the correct values, the procedure is still risky!\e[0m"
 	echo -e "\e[1;31m- This program can confuse your I2C bus, cause data loss or brick your hardware! Proceed AT YOUR OWN RISK!\e[0m"
@@ -1711,19 +1725,19 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.8.2
+# Version:    0.9.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
 
 ### DISCLAIMER
-Detection of a 'Kingston Fury Beast DDR5 RGB RAM' is not implemented, so you must be really sure if selected RAM on an SMBus is really a 'Kingston Fury Beast DDR5 RGB'.
+Please make really sure if selected RAM on an SMBus is really a 'Kingston Fury BEAST\RENEGADE DDR5 RGB'.
 For more info, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.
 Even if you enter the correct values, the procedure is still risky!
 This program can confuse your I2C bus, cause data loss or brick your hardware! Proceed AT YOUR OWN RISK!
 
 ### DESCRIPTION
-While waiting for support to be added to OpenRGB, this script is intended to be used to control RGB Leds of a Kingston Fury Beast DDR5 RAM ONLY with the help of i2c-tools.
+While waiting for support to be added to OpenRGB, this script is intended to be used to control RGB Leds of a Kingston Fury BEAST\RENEGADE DDR5 RAM ONLY with the help of i2c-tools.
 
 ### FEATURES
 Set any mode (and their parameters) between rainbow, prism, spectrum, slide, wind, static, static_byledcolor, lightspeed, rain, firework, breath, breath_byledcolor, dynamic, twilight, teleport, flame, voltage, countdown and rhythm.
@@ -1738,7 +1752,7 @@ Not all modes are fully supported:
 Use the option --ramslots <ramslots_value> to select RAM sticks to control. <ramslots_value> equals a RAM slot. Accept values from 1 to 8.
 You can enter a single value to control a single RAM stick or a comma separated set of values to control two or more RAM sticks.
 If you enter e.g. --ramslots 2,4 on --smbus 0, but you really only have RAM 2, RAM 4 will be skipped.
-If you do not enter this option, 8 possible Kingston Fury Beast DDR5 RAM sticks will be searched in the selected SMBus. This is ABSOLUTELY NOT RECOMMENDED as the detection implemented here is very basic and can return false positives! So please make sure to enter this option and that <ramslots_value> equals a Kingston Fury Beast DDR5 RGB RAM!
+If you do not enter this option, 8 possible Kingston Fury BEAST\RENEGADE DDR5 RAM sticks will be searched in the selected SMBus.
 
 If the option --smbus <smbus_number> is omitted, RAM sticks will be searched in all SMBuses that support SMBus Quick Command.
 If a wrong\non existent <smbus_number> value is entered, a menu in wich you can select an SMBus will be shown.
@@ -2079,13 +2093,16 @@ if [[ "${debug}" != 'true' ]]; then
 		fi
 	done
 	if [[ "${lshw_noram}" != 'false' ]]; then
-		echo -e "\e[1;31m- No Kingston Fury Beast DDR5 RAM found!\e[0m"
+		echo -e "\e[1;31m- No Kingston Fury BEAST\RENEGADE DDR5 RAM found!\e[0m"
 		exit_one
 	fi
 fi
 i2cbuses="$(i2cdetect -l)"
 if [[ "${debug}" = 'true' ]]; then
 	unset smbus_number
+	print_large_separator
+	about_detection
+	echo
 	print_large_separator
 	echo -e "\e[1;32m- i2c-buses:\e[0m"
 	echo "${i2cbuses}"
