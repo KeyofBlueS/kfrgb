@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.9.1
+# Version:    0.9.2
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -375,9 +375,9 @@ function about_detection() {
  very often address 0x5 is write protected (as in my system), which makes this method useless.
 
  ${kfrgb_name} will:
- - check if 0x6[0-7], 0x5[0-7] and 0x4[8-f] exist on an smbus
- - on 0x6[0-7] check if 0x1 = 0x46, 0x2 = 0x55, 0x3 = 0x52, 0x4 = 0x59, 0x6 = 0x10 (for BEAST) OR = 0x11 (for RENEGADE)
- - on 0x4[8-f] check if registers &0x21, &0x25 = 78 OR = b4 and &0x27 = 78.
+ - check if addresses 0x6[0-7], 0x5[0-7] and 0x4[8-f] exist on an smbus
+ - on address 0x6[0-7] check if blocks 0x1 = 0x46, 0x2 = 0x55, 0x3 = 0x52, 0x4 = 0x59, 0x6 = 0x10 (for BEAST) OR = 0x11 (for RENEGADE)
+ - on address 0x4[8-f] check if registers &0x21, &0x25 = 78 OR = b4 and &0x27 = 78.
 
  An additional check is performed with lshw to check for 'vendor: Kingston' and 'product: KF5*'"
 }
@@ -463,11 +463,19 @@ function check_ramsticks_on_smbus() {
 				debug_color='1;31'
 			else
 				detect_registers_hex
-				if [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] || [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
+				#if [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] || [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
+				if [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_one_expected_hex}" ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] || [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_one_expected_hex}" ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
 					if [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_one_expected_hex}" ]]; then
 						submodel='BEAST'
 					elif [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_two_expected_hex}" ]]; then
 						submodel='RENEGADE'
+					fi
+					if [[ -z "${detected_submodels}" ]]; then
+						detected_submodels="${submodel}"
+					else
+						if ! echo "${detected_submodels}" | grep -q "${submodel}"; then
+							detected_submodels+="\${submodel}"
+						fi
 					fi
 					set_ramstick_hex
 					echo -e "\e[1;32m- Kingston Fury DDR5 RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please MAKE REALLY SURE this is a Kingston Fury ${submodel} DDR5 RGB!)\e[0m"
@@ -476,7 +484,7 @@ function check_ramsticks_on_smbus() {
 						echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | tail -n +2 | sed -e "s/          \+/   /g"
 					fi
 				else
-					echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury BEAST\RENEGADE DDR5!\e[0m"
+					echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury ${supported_submodels} DDR5!\e[0m"
 					debug_color='1;31'
 				fi
 			fi
@@ -577,10 +585,12 @@ function print_debug_info() {
 	if [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]]; then
 		if [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_one_expected_hex}" ]]; then
 			submodel='BEAST'
+			debug_model_5_color='1;32'
 		elif [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_two_expected_hex}" ]]; then
 			submodel='RENEGADE'
+			debug_model_5_color='1;31'
 		fi
-		debug_model_5_color='1;32'
+		#debug_model_5_color='1;32'
 	else
 		debug_model_5_color='1;31'
 	fi
@@ -1719,7 +1729,7 @@ function disclaimer() {
 
 	echo
 	echo -e "\e[1;31m- ### DISCLAIMER\e[0m"
-	echo -e "\e[1;31m- Please make really sure if ${ram_sticks_info} in ${ram_slots_info} ${ram_slots} on SMBus ${smbus_number} ${verb} really a 'Kingston Fury BEAST\RENEGADE DDR5 RGB'.\e[0m"
+	echo -e "\e[1;31m- Please make really sure if ${ram_sticks_info} in ${ram_slots_info} ${ram_slots} on SMBus ${smbus_number} ${verb} really a 'Kingston Fury ${detected_submodels} DDR5 RGB'.\e[0m"
 	echo -e "\e[1;31m- For more info, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.\e[0m"
 	echo -e "\e[1;31m- Even if you enter the correct values, the procedure is still risky!\e[0m"
 	echo -e "\e[1;31m- This program can confuse your I2C bus, cause data loss or brick your hardware! Proceed AT YOUR OWN RISK!\e[0m"
@@ -1730,19 +1740,19 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.9.1
+# Version:    0.9.2
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
 
 ### DISCLAIMER
-Please make really sure if selected RAM on an SMBus is really a 'Kingston Fury BEAST\RENEGADE DDR5 RGB'.
+Please make really sure if selected RAM on an SMBus is really a 'Kingston Fury ${supported_submodels} DDR5 RGB'.
 For more info, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.
 Even if you enter the correct values, the procedure is still risky!
 This program can confuse your I2C bus, cause data loss or brick your hardware! Proceed AT YOUR OWN RISK!
 
 ### DESCRIPTION
-While waiting for support to be added to OpenRGB, this script is intended to be used to control RGB Leds of a Kingston Fury BEAST\RENEGADE DDR5 RAM ONLY with the help of i2c-tools.
+While waiting for support to be added to OpenRGB, this script is intended to be used to control RGB Leds of a Kingston Fury ${supported_submodels} DDR5 RAM ONLY with the help of i2c-tools.
 
 ### FEATURES
 Set any mode (and their parameters) between rainbow, prism, spectrum, slide, wind, static, static_byledcolor, lightspeed, rain, firework, breath, breath_byledcolor, dynamic, twilight, teleport, flame, voltage, countdown and rhythm.
@@ -1757,7 +1767,7 @@ Not all modes are fully supported:
 Use the option --ramslots <ramslots_value> to select RAM sticks to control. <ramslots_value> equals a RAM slot. Accept values from 1 to 8.
 You can enter a single value to control a single RAM stick or a comma separated set of values to control two or more RAM sticks.
 If you enter e.g. --ramslots 2,4 on --smbus 0, but you really only have RAM 2, RAM 4 will be skipped.
-If you do not enter this option, 8 possible Kingston Fury BEAST\RENEGADE DDR5 RAM sticks will be searched in the selected SMBus.
+If you do not enter this option, 8 possible Kingston Fury ${supported_submodels} DDR5 RAM sticks will be searched in the selected SMBus.
 
 If the option --smbus <smbus_number> is omitted, RAM sticks will be searched in all SMBuses that support SMBus Quick Command.
 If a wrong\non existent <smbus_number> value is entered, a menu in wich you can select an SMBus will be shown.
@@ -2001,6 +2011,9 @@ supported_byledcolor='static_byledcolor breath_byledcolor'
 supported_allcolor='static'
 supported_direction='rainbow spectrum slide wind lightspeed rain firework teleport flame countdown rhythm'
 
+#supported_submodels='BEAST\RENEGADE'
+supported_submodels='BEAST'
+
 for opt in "$@"; do
 	shift
 	case "$opt" in
@@ -2098,7 +2111,7 @@ if [[ "${debug}" != 'true' ]]; then
 		fi
 	done
 	if [[ "${lshw_noram}" != 'false' ]]; then
-		echo -e "\e[1;31m- No Kingston Fury BEAST\RENEGADE DDR5 RAM found!\e[0m"
+		echo -e "\e[1;31m- No Kingston Fury ${supported_submodels} DDR5 RAM found!\e[0m"
 		exit_one
 	fi
 fi

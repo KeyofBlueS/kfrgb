@@ -1,19 +1,19 @@
 
 # kfrgb
 
-# Version:    0.9.1
+# Version:    0.9.2
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
 
 ### DISCLAIMER
-**Please make really sure if selected RAM on an SMBus is really a 'Kingston Fury BEAST\RENEGADE DDR5 RGB'.
+**Please make really sure if selected RAM on an SMBus is really a 'Kingston Fury BEAST DDR5 RGB'.
 For more info, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.
 Even if you enter the correct values, the procedure is still risky!
 This program can confuse your I2C bus, cause data loss or brick your hardware! Proceed AT YOUR OWN RISK!**
 
 ### DESCRIPTION
-While waiting for support to be added to OpenRGB, this script is intended to be used to control RGB Leds of a **Kingston Fury BEAST\RENEGADE DDR5 RAM ONLY** with the help of i2c-tools.
+While waiting for support to be added to OpenRGB, this script is intended to be used to control RGB Leds of a **Kingston Fury BEAST DDR5 RAM ONLY** with the help of i2c-tools.
 
 ### FEATURES
 Set any mode (and their parameters) between rainbow, prism, spectrum, slide, wind, static, static_byledcolor, lightspeed, rain, firework, breath, breath_byledcolor, dynamic, twilight, teleport, flame, voltage, countdown and rhythm.
@@ -39,7 +39,7 @@ sudo ln -s /opt/kfrgb/kfrgb.sh /usr/local/bin/kfrgb
 Use the option `--ramslots <ramslots_value>` to select RAM sticks to control. <ramslots_value> equals a RAM slot. Accept values from 1 to 8.
 You can enter a single value to control a single RAM stick or a comma separated set of values to control two or more RAM sticks.
 If you enter e.g. --ramslots 2,4 on --smbus 0, but you really only have RAM 2, RAM 4 will be skipped.
-If you do not enter this option, 8 possible Kingston Fury BEAST\RENEGADE DDR5 RAM sticks will be searched in the selected SMBus.
+If you do not enter this option, 8 possible Kingston Fury BEAST DDR5 RAM sticks will be searched in the selected SMBus.
 
 If the option `--smbus <smbus_number>` is omitted, RAM sticks will be searched in all SMBuses that support SMBus Quick Command.
 If a wrong\non existent <smbus_number> value is entered, a menu in wich you can select an SMBus will be shown.
