@@ -630,7 +630,7 @@ function print_debug_info() {
 		debug_blocks_color='1;31'
 	fi
 	echo
-	echo -e "\e[${debug_blocks_color}m * i2cdump ${smbus_number_check} 0x${ramstick_hex} i (check blocks 0x01, 0x02, 0x03, 0x04, 0x06):\e[0m"
+	echo -e "\e[${debug_blocks_color}m * i2cdump ${smbus_number_check} 0x${ramstick_hex} i (check blocks 0x02, 0x03, 0x04, 0x05, 0x07):\e[0m"
 	if [[ -n "${i2cdump_blocks}" ]]; then
 		echo "${i2cdump_blocks}"
 	fi
