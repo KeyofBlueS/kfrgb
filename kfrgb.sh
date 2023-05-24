@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.9.2
+# Version:    0.9.3
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -463,8 +463,7 @@ function check_ramsticks_on_smbus() {
 				debug_color='1;31'
 			else
 				detect_registers_hex
-				#if [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] || [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
-				if [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_one_expected_hex}" ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] || [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_one_expected_hex}" ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
+				if [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] || [[ "${i2cget_model_1_detected_hex}" = "${ramslot_model_1_expected_hex}" ]] && [[ "${i2cget_model_2_detected_hex}" = "${ramslot_model_2_expected_hex}" ]] && [[ "${i2cget_model_3_detected_hex}" = "${ramslot_model_3_expected_hex}" ]] && [[ "${i2cget_model_4_detected_hex}" = "${ramslot_model_4_expected_hex}" ]] && [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]] && [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
 					if [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_one_expected_hex}" ]]; then
 						submodel='BEAST'
 					elif [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_two_expected_hex}" ]]; then
@@ -585,12 +584,10 @@ function print_debug_info() {
 	if [[ "${i2cget_model_5_detected_hex}" =~ ^("${ramslot_model_5_one_expected_hex}"|"${ramslot_model_5_two_expected_hex}")$ ]]; then
 		if [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_one_expected_hex}" ]]; then
 			submodel='BEAST'
-			debug_model_5_color='1;32'
 		elif [[ "${i2cget_model_5_detected_hex}" = "${ramslot_model_5_two_expected_hex}" ]]; then
 			submodel='RENEGADE'
-			debug_model_5_color='1;31'
 		fi
-		#debug_model_5_color='1;32'
+		debug_model_5_color='1;32'
 	else
 		debug_model_5_color='1;31'
 	fi
@@ -1740,7 +1737,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.9.2
+# Version:    0.9.3
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -2011,8 +2008,7 @@ supported_byledcolor='static_byledcolor breath_byledcolor'
 supported_allcolor='static'
 supported_direction='rainbow spectrum slide wind lightspeed rain firework teleport flame countdown rhythm'
 
-#supported_submodels='BEAST\RENEGADE'
-supported_submodels='BEAST'
+supported_submodels='BEAST\RENEGADE'
 
 for opt in "$@"; do
 	shift
