@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.9.5
+# Version:    0.9.6
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -176,6 +176,7 @@ function initialize_modes() {
 	ramslot_block_4_expected_hex='59' # DO NOT EDIT AT ALL!
 	ramslot_block_5_one_expected_hex='10' # DO NOT EDIT AT ALL!
 	ramslot_block_5_two_expected_hex='11' # DO NOT EDIT AT ALL!
+	ramslot_block_5_three_expected_hex='12' # DO NOT EDIT AT ALL!
 	#initialize mode
 	fury_begin_trnsfer='53' # DO NOT EDIT AT ALL!
 	fury_reg_apply='08' # DO NOT EDIT AT ALL!
@@ -388,13 +389,14 @@ function about_detection() {
 function check_ramsticks_on_smbus() {
 
 	for smbus_number_check in ${smbus_numbers}; do
-		if ! echo "${i2cbuses}" | grep -q "^i2c-${smbus_number_check}[[:space:]]" || [[ "$(echo "${i2cbuses}" | grep "^i2c-${smbus_number_check}[[:space:]]" | awk '{print $2}')" != 'smbus' ]] || [[ "$(i2cdetect -F "${smbus_number_check}" | grep "^SMBus Quick Command" | rev | awk '{print $1}' | rev)" = 'no' ]]; then
+		smbus_functionalities="$(i2cdetect -F "${smbus_number_check}")"
+		if ! echo "${i2cbuses}" | grep -q "^i2c-${smbus_number_check}[[:space:]]" || [[ "$(echo "${i2cbuses}" | grep "^i2c-${smbus_number_check}[[:space:]]" | awk '{print $2}')" != 'smbus' ]] || [[ "$(echo "${smbus_functionalities}" | grep "^SMBus Quick Command" | rev | awk '{print $1}' | rev)" = 'no' ]]; then
 			echo
 			if ! echo "${i2cbuses}" | grep -q "^i2c-${smbus_number_check}[[:space:]]"; then
 				echo -e "\e[1;31m- bus i2c-${smbus_number_check}: not found!\e[0m"
 			elif [[ "$(echo "${i2cbuses}" | grep "^i2c-${smbus_number_check}[[:space:]]" | awk '{print $2}')" != 'smbus' ]]; then
 				echo -e "\e[1;31m- bus i2c-${smbus_number_check}: is not an SMBus!\e[0m"
-			elif [[ "$(i2cdetect -F "${smbus_number_check}" | grep "^SMBus Quick Command" | rev | awk '{print $1}' | rev)" = 'no' ]]; then
+			elif [[ "$(echo "${smbus_functionalities}" | grep "^SMBus Quick Command" | rev | awk '{print $1}' | rev)" = 'no' ]]; then
 				echo -e "\e[1;31m- bus i2c-${smbus_number_check}: do not support SMBus Quick Command!\e[0m"
 			fi
 			unset smbus_number
@@ -407,6 +409,10 @@ function check_ramsticks_on_smbus() {
 				print_large_separator
 				echo -e "\e[1;32m- i2cdetect -y ${smbus_number_check} (check SMBus i2c-${smbus_number_check}):\e[0m"
 				echo "${smbus_detect}"
+				echo
+			fi
+			if [[ "$(echo "${smbus_functionalities}" | grep "^I2C Block Read" | rev | awk '{print $1}' | rev)" = 'no' ]]; then
+				echo -e "\e[1;31m- ERROR: bus i2c-${smbus_number_check}: do not support I2C Block Read, model detection is not possible!\e[0m"
 				echo
 			fi
 			for ramstick_hex in ${ramsticks_hex//,/$' '}; do
@@ -467,35 +473,48 @@ function check_ramsticks_on_smbus() {
 					ram_not_found='true'
 					debug_color='1;31'
 				else
-					detect_registers_hex
-					if [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] || [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
-						detect_blocks_hex
-						if [[ "${ramslot_block_1_detected_hex}" = "${ramslot_block_1_expected_hex}" ]] && [[ "${ramslot_block_2_detected_hex}" = "${ramslot_block_2_expected_hex}" ]] && [[ "${ramslot_block_3_detected_hex}" = "${ramslot_block_3_expected_hex}" ]] && [[ "${ramslot_block_4_detected_hex}" = "${ramslot_block_4_expected_hex}" ]] && [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}")$ ]]; then
-							if [[ "${ramslot_block_5_detected_hex}" = "${ramslot_block_5_one_expected_hex}" ]]; then
-								submodel='BEAST'
-							elif [[ "${ramslot_block_5_detected_hex}" = "${ramslot_block_5_two_expected_hex}" ]]; then
-								submodel='RENEGADE'
-							fi
-							if [[ -z "${detected_submodels}" ]]; then
-								detected_submodels="${submodel}"
-							else
-								if ! echo "${detected_submodels}" | grep -q "${submodel}"; then
-									detected_submodels+="\${submodel}"
+					if [[ "${risk}" = 'true' ]]; then
+						set_ramstick_hex
+						echo
+						model_detection_disabled_disclaimer
+						echo -e "\e[1;32m- A possible Kingston Fury DDR5 RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please MAKE REALLY SURE this is a Kingston Fury ${supported_submodels} DDR5 RGB!)\e[0m"
+						debug_color='1;32'
+						if [[ "${debug}" != 'true' ]]; then
+							echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | tail -n +2 | sed -e "s/          \+/   /g"
+							echo
+						fi
+						detected_submodels="${supported_submodels}"
+					else
+						detect_registers_hex
+						if [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] || [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
+							detect_blocks_hex
+							if [[ "${ramslot_block_1_detected_hex}" = "${ramslot_block_1_expected_hex}" ]] && [[ "${ramslot_block_2_detected_hex}" = "${ramslot_block_2_expected_hex}" ]] && [[ "${ramslot_block_3_detected_hex}" = "${ramslot_block_3_expected_hex}" ]] && [[ "${ramslot_block_4_detected_hex}" = "${ramslot_block_4_expected_hex}" ]] && [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}")$ ]]; then
+								if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_three_expected_hex}")$ ]]; then
+									submodel='BEAST'
+								elif [[ "${ramslot_block_5_detected_hex}" = "${ramslot_block_5_two_expected_hex}" ]]; then
+									submodel='RENEGADE'
 								fi
-							fi
-							set_ramstick_hex
-							echo -e "\e[1;32m- Kingston Fury DDR5 RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please MAKE REALLY SURE this is a Kingston Fury ${submodel} DDR5 RGB!)\e[0m"
-							debug_color='1;32'
-							if [[ "${debug}" != 'true' ]]; then
-								echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | tail -n +2 | sed -e "s/          \+/   /g"
+								if [[ -z "${detected_submodels}" ]]; then
+									detected_submodels="${submodel}"
+								else
+									if ! echo "${detected_submodels}" | grep -q "${submodel}"; then
+										detected_submodels+="\${submodel}"
+									fi
+								fi
+								set_ramstick_hex
+								echo -e "\e[1;32m- Kingston Fury DDR5 RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please MAKE REALLY SURE this is a Kingston Fury ${submodel} DDR5 RGB!)\e[0m"
+								debug_color='1;32'
+								if [[ "${debug}" != 'true' ]]; then
+									echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | tail -n +2 | sed -e "s/          \+/   /g"
+								fi
+							else
+								echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury ${supported_submodels} DDR5!\e[0m"
+								debug_color='1;31'
 							fi
 						else
 							echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury ${supported_submodels} DDR5!\e[0m"
 							debug_color='1;31'
 						fi
-					else
-						echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury ${supported_submodels} DDR5!\e[0m"
-						debug_color='1;31'
 					fi
 				fi
 				check_hex_values "${ramstick_hex} ${ramslot_value_one_check_hex} ${ramslot_value_two_check_hex} ${ramslot_value_expected_hex}"
@@ -537,7 +556,7 @@ function detect_blocks_hex() {
 		wait='0.015'
 	fi
 	i2cdump_detect_blocks
-	if [[ "${ramslot_block_1_detected_hex}" != "${ramslot_block_1_expected_hex}" ]] || [[ "${ramslot_block_2_detected_hex}" != "${ramslot_block_2_expected_hex}" ]] || [[ "${ramslot_block_3_detected_hex}" != "${ramslot_block_3_expected_hex}" ]] || [[ "${ramslot_block_4_detected_hex}" != "${ramslot_block_4_expected_hex}" ]] || ! [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}")$ ]]; then
+	if [[ "${ramslot_block_1_detected_hex}" != "${ramslot_block_1_expected_hex}" ]] || [[ "${ramslot_block_2_detected_hex}" != "${ramslot_block_2_expected_hex}" ]] || [[ "${ramslot_block_3_detected_hex}" != "${ramslot_block_3_expected_hex}" ]] || [[ "${ramslot_block_4_detected_hex}" != "${ramslot_block_4_expected_hex}" ]] || ! [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}")$ ]]; then
 		if [[ "${ram_not_found}" != 'true' ]]; then
 			sleep "${wait}"
 			i2cset_retry -y "${smbus_number_check}" "0x${ramstick_hex}" "0x${fury_reg_apply}" "0x${fury_begin_trnsfer}"
@@ -598,6 +617,10 @@ function print_debug_info() {
 		debug_registers_color='1;31'
 	fi
 	echo
+	if [[ "${risk}" = 'true' ]]; then
+		echo -e "\e[1;31m- WARNING: MODEL DETECTION IS DISABLED!\e[0m"
+		echo
+	fi
 	echo -e "\e[${debug_registers_color}m * i2cdump ${smbus_number_check} 0x${ramslot_value_one_check_hex} b (check registers 0x21, 0x25, 0x27):\e[0m"
 	if [[ -n "${i2cdump_registers}" ]]; then
 		echo "${i2cdump_registers}"
@@ -624,7 +647,7 @@ function print_debug_info() {
 		detect_blocks_hex
 		debug_color='1;31'
 	fi
-	if [[ "${ramslot_block_1_detected_hex}" = "${ramslot_block_1_expected_hex}" ]] && [[ "${ramslot_block_2_detected_hex}" = "${ramslot_block_2_expected_hex}" ]] && [[ "${ramslot_block_3_detected_hex}" = "${ramslot_block_3_expected_hex}" ]] && [[ "${ramslot_block_4_detected_hex}" = "${ramslot_block_4_expected_hex}" ]] && [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}")$ ]]; then
+	if [[ "${ramslot_block_1_detected_hex}" = "${ramslot_block_1_expected_hex}" ]] && [[ "${ramslot_block_2_detected_hex}" = "${ramslot_block_2_expected_hex}" ]] && [[ "${ramslot_block_3_detected_hex}" = "${ramslot_block_3_expected_hex}" ]] && [[ "${ramslot_block_4_detected_hex}" = "${ramslot_block_4_expected_hex}" ]] && [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}")$ ]]; then
 		debug_blocks_color='1;32'
 	else
 		debug_blocks_color='1;31'
@@ -654,8 +677,8 @@ function print_debug_info() {
 	else
 		debug_model_4_color='1;31'
 	fi
-	if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}")$ ]]; then
-		if [[ "${ramslot_block_5_detected_hex}" = "${ramslot_block_5_one_expected_hex}" ]]; then
+	if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}")$ ]]; then
+		if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_three_expected_hex}")$ ]]; then
 			submodel='BEAST'
 		elif [[ "${ramslot_block_5_detected_hex}" = "${ramslot_block_5_two_expected_hex}" ]]; then
 			submodel='RENEGADE'
@@ -668,7 +691,7 @@ function print_debug_info() {
 	echo -e "\e[${debug_model_2_color}m  * block 0x03: \e[m0x${ramslot_block_2_detected_hex} \e[${debug_model_2_color}m(expected 0x${ramslot_block_2_expected_hex})\e[0m"
 	echo -e "\e[${debug_model_3_color}m  * block 0x04: \e[m0x${ramslot_block_3_detected_hex} \e[${debug_model_3_color}m(expected 0x${ramslot_block_3_expected_hex})\e[0m"
 	echo -e "\e[${debug_model_4_color}m  * block 0x05: \e[m0x${ramslot_block_4_detected_hex} \e[${debug_model_4_color}m(expected 0x${ramslot_block_4_expected_hex})\e[0m"
-	echo -e "\e[${debug_model_5_color}m  * block 0x07: \e[m0x${ramslot_block_5_detected_hex} \e[${debug_model_5_color}m(expected 0x${ramslot_block_5_one_expected_hex} for BEAST or 0x${ramslot_block_5_two_expected_hex} for RENEGADE)\e[0m"
+	echo -e "\e[${debug_model_5_color}m  * block 0x07: \e[m0x${ramslot_block_5_detected_hex} \e[${debug_model_5_color}m(expected 0x${ramslot_block_5_one_expected_hex}/0x${ramslot_block_5_three_expected_hex} for BEAST or 0x${ramslot_block_5_two_expected_hex} for RENEGADE)\e[0m"
 	echo
 	if [[ -n "${ramslot_block_1_detected_hex}" ]] && [[ -n "${ramslot_block_2_detected_hex}" ]] && [[ -n "${ramslot_block_3_detected_hex}" ]] && [[ -n "${ramslot_block_4_detected_hex}" ]] && [[ -n "${ramslot_block_5_detected_hex}" ]]; then
 		model="$(printf "\x${ramslot_block_1_detected_hex}\x${ramslot_block_2_detected_hex}\x${ramslot_block_3_detected_hex}\x${ramslot_block_4_detected_hex} ${submodel}")"
@@ -1451,13 +1474,15 @@ function set_mode() {
 	echo
 	echo -e "\e[0;32m- SMBus: $(echo "${i2cbuses}" | grep "^i2c-${smbus_number}[[:space:]]" | sed -e "s/[[:space:]]\+/ /g")\e[0m"
 	if [[ "$(echo "${ram_slots}" | wc -w)" -gt '1' ]]; then
+		verb='are'
+		demonstrative='these devices'
 		ram_sticks_info='RAMs'
 		ram_slots_info='Slots'
-		verb='are'
 	else
+		demonstrative='this device'
+		verb='is'
 		ram_sticks_info='RAM'
 		ram_slots_info='Slot'
-		verb='is'
 	fi
 	echo -e "\e[0;32m- ${ram_sticks_info} in ${ram_slots_info}: ${ram_slots}\e[0m"
 	echo
@@ -1779,10 +1804,29 @@ function disclaimer() {
 
 	echo
 	echo -e "\e[1;31m- ### DISCLAIMER\e[0m"
+	if [[ "${risk}" = 'true' ]]; then
+		model_detection_disabled_disclaimer
+	fi
 	echo -e "\e[1;31m- Please make really sure if ${ram_sticks_info} in ${ram_slots_info} ${ram_slots} on SMBus ${smbus_number} ${verb} really a 'Kingston Fury ${detected_submodels} DDR5 RGB'.\e[0m"
 	echo -e "\e[1;31m- For more info, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.\e[0m"
 	echo -e "\e[1;31m- Even if you enter the correct values, the procedure is still risky!\e[0m"
 	echo -e "\e[1;31m- This program can confuse your I2C bus, cause data loss or brick your hardware! Proceed AT YOUR OWN RISK!\e[0m"
+}
+
+function model_detection_disabled_disclaimer() {
+
+	if [[ -z "${demonstrative}" ]]; then
+		demonstrative='THIS DEVICE'
+	fi
+	if [[ -z "${verb}" ]]; then
+		verb='IS'
+	fi
+	if [[ -z "${ram_sticks_info}" ]]; then
+		ram_sticks_info='RAM'
+	fi
+	echo -e "\e[1;31m- BIG WARNING: YOU SELECTED THE OPTION TO SKIP THE MODEL DETECTION.\e[0m"
+	echo -e "\e[1;31m               I CANNOT BE REASONABLY SURE IF ${demonstrative^^} ${verb^^} REALLY\e[0m"
+	echo -e "\e[1;31m               A Kingston Fury ${supported_submodels} DDR5 ${ram_sticks_info}!\e[0m"
 }
 
 function givemehelp() {
@@ -1790,7 +1834,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.9.5
+# Version:    0.9.6
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -2086,12 +2130,13 @@ for opt in "$@"; do
 		'--ask')				set -- "$@" '-a' ;;
 		'--simulation')			set -- "$@" '-S' ;;
 		'--debug')				set -- "$@" '-D' ;;
+		'--iwanttoriskandskipmodeldetectionevenifiknowthisisstronglynotrecommended')				set -- "$@" '-R' ;;
 		'--help')				set -- "$@" '-h' ;;
 		*)						set -- "$@" "$opt"
 	esac
 done
 
-while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSDh" opt; do
+while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSDRh" opt; do
 	case ${opt} in
 		s ) smbus_number="${OPTARG}"
 		;;
@@ -2132,6 +2177,8 @@ while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSDh" opt; do
 		S ) simulation='true'
 		;;
 		D ) debug='true'
+		;;
+		R ) risk='true'
 		;;
 		h ) givemehelp; exit 0
 		;;
