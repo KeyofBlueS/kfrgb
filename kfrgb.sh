@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.9.6
+# Version:    0.9.7
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -472,18 +472,18 @@ function check_ramsticks_on_smbus() {
 					ram_not_found='true'
 					debug_color='1;31'
 				else
-					#if [[ "${risk}" = 'true' ]]; then
-						#set_ramstick_hex
-						#echo
-						#model_detection_disabled_disclaimer
-						#echo -e "\e[1;32m- A possible Kingston Fury DDR5 RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please MAKE REALLY SURE this is a Kingston Fury ${supported_submodels} DDR5 RGB!)\e[0m"
-						#debug_color='1;32'
-						#if [[ "${debug}" != 'true' ]]; then
-							#echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | tail -n +2 | sed -e "s/          \+/   /g"
-							#echo
-						#fi
-						#detected_submodels="${supported_submodels}"
-					#else
+					if [[ "${risk}" = 'true' ]]; then
+						set_ramstick_hex
+						echo
+						model_detection_disabled_disclaimer
+						echo -e "\e[1;32m- A possible Kingston Fury DDR5 RAM in slot ${ramslot} found on SMBus i2c-${smbus_number_check}! \e[1;31m(Please MAKE REALLY SURE this is a Kingston Fury ${supported_submodels} DDR5 RGB!)\e[0m"
+						debug_color='1;32'
+						if [[ "${debug}" != 'true' ]]; then
+							echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | tail -n +2 | sed -e "s/          \+/   /g"
+							echo
+						fi
+						detected_submodels="${supported_submodels}"
+					else
 						#detect_registers_hex
 						#if [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]] || [[ "${ramslot_register_21_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_25_detected_hex}" = "${ramslot_register_two_expected_hex}" ]] && [[ "${ramslot_register_27_detected_hex}" = "${ramslot_register_one_expected_hex}" ]]; then
 							detect_blocks_hex
@@ -509,12 +509,12 @@ function check_ramsticks_on_smbus() {
 							else
 								echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury ${supported_submodels} DDR5!\e[0m"
 								debug_color='1;31'
-							#fi
+							fi
 						#else
 							#echo -e "\e[1;31m- RAM in slot ${ramslot} on SMBus i2c-${smbus_number_check} doesn't seems to be a Kingston Fury ${supported_submodels} DDR5!\e[0m"
 							#debug_color='1;31'
-						fi
-					#fi
+						#fi
+					fi
 				fi
 				check_hex_values "${ramstick_hex} ${ramslot_value_one_check_hex} ${ramslot_value_two_check_hex} ${ramslot_value_expected_hex}"
 				if [[ "${debug}" = 'true' ]]; then
@@ -616,10 +616,10 @@ function print_debug_info() {
 		#debug_registers_color='1;31'
 	#fi
 	echo
-	#if [[ "${risk}" = 'true' ]]; then
-		#echo -e "\e[1;31m- WARNING: MODEL DETECTION IS DISABLED!\e[0m"
-		#echo
-	#fi
+	if [[ "${risk}" = 'true' ]]; then
+		echo -e "\e[1;31m- WARNING: MODEL DETECTION IS DISABLED!\e[0m"
+		echo
+	fi
 	#echo -e "\e[${debug_registers_color}m * i2cdump ${smbus_number_check} 0x${ramslot_value_one_check_hex} b (check registers 0x21, 0x25, 0x27):\e[0m"
 	#if [[ -n "${i2cdump_registers}" ]]; then
 		#echo "${i2cdump_registers}"
@@ -1803,9 +1803,9 @@ function disclaimer() {
 
 	echo
 	echo -e "\e[1;31m- ### DISCLAIMER\e[0m"
-	#if [[ "${risk}" = 'true' ]]; then
-		#model_detection_disabled_disclaimer
-	#fi
+	if [[ "${risk}" = 'true' ]]; then
+		model_detection_disabled_disclaimer
+	fi
 	echo -e "\e[1;31m- Please make really sure if ${ram_sticks_info} in ${ram_slots_info} ${ram_slots} on SMBus ${smbus_number} ${verb} really a 'Kingston Fury ${detected_submodels} DDR5 RGB'.\e[0m"
 	echo -e "\e[1;31m- For more info, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.\e[0m"
 	echo -e "\e[1;31m- Even if you enter the correct values, the procedure is still risky!\e[0m"
@@ -2129,13 +2129,13 @@ for opt in "$@"; do
 		'--ask')				set -- "$@" '-a' ;;
 		'--simulation')			set -- "$@" '-S' ;;
 		'--debug')				set -- "$@" '-D' ;;
-		#'--iwanttoriskandskipmodeldetectionevenifiknowthisisstronglynotrecommended')				set -- "$@" '-R' ;;
+		'--iwanttoriskandskipmodeldetectionevenifiknowthisisstronglynotrecommended')				set -- "$@" '-R' ;;
 		'--help')				set -- "$@" '-h' ;;
 		*)						set -- "$@" "$opt"
 	esac
 done
 
-while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSDh" opt; do
+while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSDRh" opt; do
 	case ${opt} in
 		s ) smbus_number="${OPTARG}"
 		;;
@@ -2177,8 +2177,8 @@ while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSDh" opt; do
 		;;
 		D ) debug='true'
 		;;
-		#R ) risk='true'
-		#;;
+		R ) risk='true'
+		;;
 		h ) givemehelp; exit 0
 		;;
 		*) givemehelp; exit_one
