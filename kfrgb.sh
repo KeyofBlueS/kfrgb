@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.9.9
+# Version:    0.9.10
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -388,6 +388,8 @@ function about_detection() {
 function check_ramsticks_on_smbus() {
 
 	for smbus_number_check in ${smbus_numbers}; do
+		risk="${risk_stored}"
+		unset remember_risk
 		smbus_functionalities="$(i2cdetect -F "${smbus_number_check}")"
 		if ! echo "${i2cbuses}" | grep -q "^i2c-${smbus_number_check}[[:space:]]" || [[ "$(echo "${i2cbuses}" | grep "^i2c-${smbus_number_check}[[:space:]]" | awk '{print $2}')" != 'smbus' ]] || [[ "$(echo "${smbus_functionalities}" | grep "^SMBus Quick Command" | rev | awk '{print $1}' | rev)" = 'no' ]]; then
 			echo
@@ -462,6 +464,34 @@ function check_ramsticks_on_smbus() {
 				unset detect_blocks_hex_deployed
 				if [[ "${debug}" = 'true' ]]; then
 					print_small_separator
+				fi
+				#if [[ "${nowarn}" != 'true' ]] && [[ "${risk}" = 'true' ]] && [[ "${remember_risk}" != 'true' ]] && [[ "${debug}" != 'true' ]] && [[ "$(echo "${smbus_functionalities}" | grep "^I2C Block Read" | rev | awk '{print $1}' | rev)" = 'yes' ]]; then
+					#while true; do
+						#echo
+						#echo -e "\e[1;31m- ERROR: bus i2c-${smbus_number_check} DO SUPPORT I2C Block Read, THERE IS NO NEED TO SKIP MODEL DETECTION!\e[0m"
+						#echo -e "\e[1;31m- do you still want to risk and proceed to skip model detection?\e[0m"
+						#echo -e "\e[1;32m0) No\e[0m"
+						#echo -e "\e[1;31m1) Yes\e[0m"
+						#read -p " choose> " risk_answer
+						#echo
+						#if [[ ! "${risk_answer}" =~ ^[[:digit:]]+$ ]] || [[ "${set_mode_answer}" -gt '1' ]] || [[ "${set_mode_answer}" -lt '0' ]]; then
+							#echo -e "\e[1;31mInvalid choice!\e[0m"
+							#sleep '1'
+						#elif [[ "${risk_answer}" -eq '0' ]]; then
+							#risk='false'
+							#break
+						#elif [[ "${risk_answer}" -eq '1' ]]; then
+							#remember_risk='true'
+							#break
+						#fi
+					#done
+				#fi
+				if [[ "${risk}" = 'true' ]] && [[ "${debug}" != 'true' ]] && [[ "$(echo "${smbus_functionalities}" | grep "^I2C Block Read" | rev | awk '{print $1}' | rev)" = 'yes' ]]; then
+					echo
+					echo -e "\e[1;31m- ERROR: bus i2c-${smbus_number_check} DO SUPPORT I2C Block Read, THERE IS NO NEED TO SKIP MODEL DETECTION!\e[0m"
+					echo -e "\e[1;31m  MODEL DETECTION IS NOW REENABLED FOR SECURITY REASON!\e[0m"
+					risk='false'
+					echo
 				fi
 				if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+vendor: Kingston" || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+product: KF5" || ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "[ ]${ramstick_hex}[ ]" || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "[ ]${ramslot_value_one_check_hex}[ ]" || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "[ ]${ramslot_value_two_check_hex}[ ]"; then
 					echo -e "\e[1;33m- Kingston Fury DDR5 RAM in slot ${ramslot} not found on SMBus i2c-${smbus_number_check}.\e[0m"
@@ -625,11 +655,6 @@ function print_debug_info() {
 	#else
 		#debug_registers_color='1;31'
 	#fi
-	echo
-	if [[ "${risk}" = 'true' ]]; then
-		echo -e "\e[1;31m- WARNING: MODEL DETECTION IS DISABLED!\e[0m"
-		echo
-	fi
 	#echo -e "\e[${debug_registers_color}m * i2cdump ${smbus_number_check} 0x${ramslot_value_one_check_hex} b (check registers 0x21, 0x25, 0x27):\e[0m"
 	#if [[ -n "${i2cdump_registers}" ]]; then
 		#echo "${i2cdump_registers}"
@@ -652,6 +677,11 @@ function print_debug_info() {
 	#echo -e "\e[${debug_register_21_color}m  * register 0x21: \e[m0x${ramslot_register_21_detected_hex} \e[${debug_register_21_color}m(expected 0x${ramslot_register_one_expected_hex} or 0x${ramslot_register_two_expected_hex})\e[0m"
 	#echo -e "\e[${debug_register_25_color}m  * register 0x25: \e[m0x${ramslot_register_25_detected_hex} \e[${debug_register_21_color}m(expected 0x${ramslot_register_one_expected_hex} or 0x${ramslot_register_two_expected_hex})\e[0m"
 	#echo -e "\e[${debug_register_27_color}m  * register 0x27: \e[m0x${ramslot_register_27_detected_hex} \e[${debug_register_21_color}m(expected 0x${ramslot_register_one_expected_hex})\e[0m"
+	echo
+	if [[ "${risk}" = 'true' ]]; then
+		echo -e "\e[1;31m- WARNING: MODEL DETECTION IS DISABLED!\e[0m"
+		echo
+	fi
 	if [[ "${detect_blocks_hex_deployed}" != 'true' ]] && [[ "$(echo "${smbus_functionalities}" | grep "^I2C Block Read" | rev | awk '{print $1}' | rev)" = 'yes' ]]; then
 		detect_blocks_hex
 		debug_color='1;31'
@@ -768,7 +798,7 @@ function select_smbus() {
 		find_smbus
 	fi
 	echo
-	echo -e "\e[1;32m- Please select an SMBus (or type 'quit' to exit from ${kfrgb_name}):\e[0m"
+	echo -e "\e[1;32m- Please select an SMBus (or type 'quit' or 'q' to exit from ${kfrgb_name}):\e[0m"
 	echo -e "${smbuses}" | grep -E "[ ]?[ ]i2c-(${smbus_numbers_check//' '/$'|'})"
 	while true; do
 		read -p " choose> " smbus_numbers
@@ -1843,7 +1873,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.9.9
+# Version:    0.9.10
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -2116,6 +2146,8 @@ supported_direction='rainbow spectrum slide wind lightspeed rain firework telepo
 
 supported_submodels='BEAST\RENEGADE'
 
+risk='false'
+
 for opt in "$@"; do
 	shift
 	case "$opt" in
@@ -2194,6 +2226,8 @@ while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSDRh" opt; do
 		*) givemehelp; exit_one
 	esac
 done
+
+risk_stored="${risk}"
 
 initialize
 initialize_modes
