@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.9.7
+# Version:    0.9.8
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -467,7 +467,7 @@ function check_ramsticks_on_smbus() {
 				if [[ "${debug}" = 'true' ]]; then
 					print_small_separator
 				fi
-				if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "\ +vendor: Kingston" || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "\ +product: KF5" || ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramstick_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_one_check_hex}\ " || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "\ ${ramslot_value_two_check_hex}\ "; then
+				if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+vendor: Kingston" || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+product: KF5" || ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "[ ]${ramstick_hex}[ ]" || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "[ ]${ramslot_value_one_check_hex}[ ]" || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "[ ]${ramslot_value_two_check_hex}[ ]"; then
 					echo -e "\e[1;33m- Kingston Fury DDR5 RAM in slot ${ramslot} not found on SMBus i2c-${smbus_number_check}.\e[0m"
 					ram_not_found='true'
 					debug_color='1;31'
@@ -582,7 +582,7 @@ function i2cdump_detect_blocks() {
 
 function print_debug_info() {
 
-	if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "\ +vendor: Kingston" || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "\ +product: KF5"; then
+	if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+vendor: Kingston" || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+product: KF5"; then
 		debug_lshw_color='1;31'
 	else
 		debug_lshw_color='1;32'
@@ -591,17 +591,17 @@ function print_debug_info() {
 	echo -e "\e[${debug_lshw_color}m * lshw (check bank ${bank}):\e[0m"
 	echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1
 	echo
-	if echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}' | grep -q "\ ${ramstick_hex}\ "; then
+	if echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}' | grep -q "[ ]${ramstick_hex}[ ]"; then
 		echo -e "\e[1;32m  * Address 0x${ramstick_hex} found in SMBus i2c-${smbus_number_check}.\e[0m"
 	else
 		echo -e "\e[1;31m  * Address 0x${ramstick_hex} not found in SMBus i2c-${smbus_number_check}.\e[0m"
 	fi
-	if echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}' | grep -q "\ ${ramslot_value_one_check_hex}\ "; then
+	if echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}' | grep -q "[ ]${ramslot_value_one_check_hex}[ ]"; then
 		echo -e "\e[1;32m  * Address 0x${ramslot_value_one_check_hex} found in SMBus i2c-${smbus_number_check}.\e[0m"
 	else
 		echo -e "\e[1;31m  * Address 0x${ramslot_value_one_check_hex} not found in SMBus i2c-${smbus_number_check}.\e[0m"
 	fi
-	if echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}' | grep -q "\ ${ramslot_value_two_check_hex}\ "; then
+	if echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}' | grep -q "[ ]${ramslot_value_two_check_hex}[ ]"; then
 		echo -e "\e[1;32m  * Address 0x${ramslot_value_two_check_hex} found in SMBus i2c-${smbus_number_check}.\e[0m"
 	else
 		echo -e "\e[1;31m  * Address 0x${ramslot_value_two_check_hex} not found in SMBus i2c-${smbus_number_check}.\e[0m"
@@ -759,7 +759,7 @@ function select_smbus() {
 	fi
 	echo
 	echo -e "\e[1;32m- Please select an SMBus (or type 'quit' to exit from ${kfrgb_name}:\e[0m"
-	echo -e "${smbuses}" | grep -E "\ ?\ i2c-(${smbus_numbers_check//' '/$'|'})"
+	echo -e "${smbuses}" | grep -E "[ ]?[ ]i2c-(${smbus_numbers_check//' '/$'|'})"
 	while true; do
 		read -p " choose> " smbus_numbers
 		if [[ "${smbus_numbers,,}" = 'quit' ]]; then
@@ -1833,7 +1833,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.9.6
+# Version:    0.9.8
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
