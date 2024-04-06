@@ -144,11 +144,11 @@ set a yellow color to RAM 2 and 4 on SMBus 0 (in this case the options --mode st
 
 `# kfrgb --ramslots 2,4 --smbus 0 --color 255,255,0`
 
-set a every single led color to RAM 2 and 4 on SMBus 0:
+set every single led color to RAM 2 and 4 on SMBus 0:
 
 `# kfrgb --ramslots 2,4 --smbus 0 --mode static_byledcolor --byledcolors 255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255,255,0,0,0,255,0,0,0,255`
 
-set a every single led to a random color to RAM 2 and 4 on SMBus 0:
+set every single led to a random color to RAM 2 and 4 on SMBus 0:
 
 `# kfrgb --ramslots 2,4 --smbus 0 --mode static_byledcolor --randomcolor`
 
