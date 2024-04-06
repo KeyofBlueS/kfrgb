@@ -474,7 +474,7 @@ function check_ramsticks_on_smbus() {
 						#echo -e "\e[1;31m1) Yes\e[0m"
 						#read -p " choose> " risk_answer
 						#echo
-						#if [[ ! "${risk_answer}" =~ ^[[:digit:]]+$ ]] || [[ "${set_mode_answer}" -gt '1' ]] || [[ "${set_mode_answer}" -lt '0' ]]; then
+						#if [[ ! "${risk_answer}" =~ ^[[:digit:]]+$ ]] || [[ "${risk_answer}" -gt '1' ]] || [[ "${risk_answer}" -lt '0' ]]; then
 							#echo -e "\e[1;31mInvalid choice!\e[0m"
 							#sleep '1'
 						#elif [[ "${risk_answer}" -eq '0' ]]; then
