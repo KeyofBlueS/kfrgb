@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.9.10
+# Version:    0.9.11
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -486,7 +486,7 @@ function check_ramsticks_on_smbus() {
 						#fi
 					#done
 				#fi
-				if [[ "${risk}" = 'true' ]] && [[ "${debug}" != 'true' ]] && [[ "$(echo "${smbus_functionalities}" | grep "^I2C Block Read" | rev | awk '{print $1}' | rev)" = 'yes' ]]; then
+				if [[ "${risk}" = 'true' ]] && [[ "${riskforreal}" = 'false' ]] && [[ "${debug}" != 'true' ]] && [[ "$(echo "${smbus_functionalities}" | grep "^I2C Block Read" | rev | awk '{print $1}' | rev)" = 'yes' ]]; then
 					echo
 					echo -e "\e[1;31m- ERROR: bus i2c-${smbus_number_check} DO SUPPORT I2C Block Read, THERE IS NO NEED TO SKIP MODEL DETECTION!\e[0m"
 					echo -e "\e[1;31m  MODEL DETECTION IS NOW REENABLED FOR SECURITY REASON!\e[0m"
@@ -1873,7 +1873,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.9.10
+# Version:    0.9.11
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -2147,6 +2147,7 @@ supported_direction='rainbow spectrum slide wind lightspeed rain firework telepo
 supported_submodels='BEAST\RENEGADE'
 
 risk='false'
+riskforreal='false'
 
 for opt in "$@"; do
 	shift
@@ -2172,12 +2173,13 @@ for opt in "$@"; do
 		'--simulation')			set -- "$@" '-S' ;;
 		'--debug')				set -- "$@" '-D' ;;
 		'--iwanttoriskandskipmodeldetectionevenifiknowthisisstronglynotrecommended')				set -- "$@" '-R' ;;
+		'--iwanttoriskandskipmodeldetectionevenifiknowthisisstronglynotrecommendedforreal')			set -- "$@" '-F' ;;
 		'--help')				set -- "$@" '-h' ;;
 		*)						set -- "$@" "$opt"
 	esac
 done
 
-while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSDRh" opt; do
+while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSDRFh" opt; do
 	case ${opt} in
 		s ) smbus_number="${OPTARG}"
 		;;
@@ -2220,6 +2222,8 @@ while getopts "s:m:d:p:e:q:i:c:b:t:u:k:zl:ow:naSDRh" opt; do
 		D ) debug='true'
 		;;
 		R ) risk='true'
+		;;
+		F ) riskforreal='true'
 		;;
 		h ) givemehelp; exit 0
 		;;
