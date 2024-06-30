@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.9.11
+# Version:    0.9.12
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -446,7 +446,11 @@ function check_ramsticks_on_smbus() {
 					ramslot_value_one_check_hex="${ramslot_eight_value_one_check_hex}"
 					ramslot_value_two_check_hex="${ramslot_eight_value_two_check_hex}"
 				fi
-				bank=$(("${ramslot}" - 1))
+				if [[ "${lshw_slots}" = '2' ]] && [[ "${ramslot}" = '3' ]]; then
+					bank='1'
+				else
+					bank=$(("${ramslot}" - 1))
+				fi
 				#unset i2cdump_registers
 				#unset ramslot_register_21_detected_hex
 				#unset ramslot_register_25_detected_hex
@@ -1873,7 +1877,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.9.11
+# Version:    0.9.12
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -2246,6 +2250,12 @@ if [[ "${error_ramstick}" = 'true' ]]; then
 fi
 
 lshw="$(lshw -disable device-tree -disable spd -disable memory -disable cpuinfo -disable cpuid -disable pci -disable isapnp -disable pcmcia -disable ide -disable usb -disable scsi -disable network -C memory)"
+lshw_slots='0'
+for bank_number in {0..7}; do
+	if echo "${lshw}" | grep -Eq "^[ ]+\*-bank:${bank_number}"; then
+		lshw_slots="$(("${lshw_slots}" + 1))"
+	fi
+done
 if [[ "${debug}" != 'true' ]]; then
 	for bank_number in {0..7}; do
 		if echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' && echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'product: KF5'; then
