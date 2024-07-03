@@ -2243,12 +2243,6 @@ if [[ -z "${ramsticks}" ]] || [[ "${debug}" = 'true' ]]; then
 	ramsticks='1,2,3,4,5,6,7,8'
 fi
 
-check_ramsticks
-if [[ "${error_ramstick}" = 'true' ]]; then
-	givemehelp
-	exit_one
-fi
-
 lshw="$(lshw -disable device-tree -disable spd -disable memory -disable cpuinfo -disable cpuid -disable pci -disable isapnp -disable pcmcia -disable ide -disable usb -disable scsi -disable network -C memory)"
 lshw_slots='0'
 for bank_number in {0..7}; do
@@ -2256,6 +2250,14 @@ for bank_number in {0..7}; do
 		lshw_slots="$(("${lshw_slots}" + 1))"
 	fi
 done
+
+check_ramsticks
+if [[ "${error_ramstick}" = 'true' ]]; then
+	givemehelp
+	exit_one
+fi
+
+echo "lshw_slots ${lshw_slots}"
 if [[ "${debug}" != 'true' ]]; then
 	for bank_number in {0..7}; do
 		if echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' && echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'product: KF5'; then
