@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.9.12
+# Version:    0.10.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -387,6 +387,10 @@ function about_detection() {
 
 function check_ramsticks_on_smbus() {
 
+	if lsmod | grep -q 'spd5118'; then
+		spd5118_module='true'
+		modprobe -r spd5118
+	fi
 	for smbus_number_check in ${smbus_numbers}; do
 		risk="${risk_stored}"
 		unset remember_risk
@@ -578,6 +582,9 @@ function check_ramsticks_on_smbus() {
 		smbus_menu='true'
 	elif [[ "$(echo ${smbus_numbers_check} | wc -w)" -gt '1' ]]; then
 		exit_one
+	fi
+	if [[ "${spd5118_module}" = 'true' ]]; then
+		modprobe spd5118
 	fi
 }
 
@@ -1877,7 +1884,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.9.12
+# Version:    0.10.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
