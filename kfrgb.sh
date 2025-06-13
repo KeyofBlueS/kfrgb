@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.9.11
+# Version:    0.10.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -387,6 +387,10 @@ function about_detection() {
 
 function check_ramsticks_on_smbus() {
 
+	if lsmod | grep -q 'spd5118'; then
+		spd5118_module='true'
+		modprobe -r spd5118
+	fi
 	for smbus_number_check in ${smbus_numbers}; do
 		risk="${risk_stored}"
 		unset remember_risk
@@ -446,7 +450,11 @@ function check_ramsticks_on_smbus() {
 					ramslot_value_one_check_hex="${ramslot_eight_value_one_check_hex}"
 					ramslot_value_two_check_hex="${ramslot_eight_value_two_check_hex}"
 				fi
-				bank=$(("${ramslot}" - 1))
+				if [[ "${lshw_slots}" = '2' ]] && [[ "${ramslot}" = '3' ]]; then
+					bank='1'
+				else
+					bank=$(("${ramslot}" - 1))
+				fi
 				#unset i2cdump_registers
 				#unset ramslot_register_21_detected_hex
 				#unset ramslot_register_25_detected_hex
@@ -574,6 +582,9 @@ function check_ramsticks_on_smbus() {
 		smbus_menu='true'
 	elif [[ "$(echo ${smbus_numbers_check} | wc -w)" -gt '1' ]]; then
 		exit_one
+	fi
+	if [[ "${spd5118_module}" = 'true' ]]; then
+		modprobe spd5118
 	fi
 }
 
@@ -1873,7 +1884,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.9.11
+# Version:    0.10.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -2239,13 +2250,21 @@ if [[ -z "${ramsticks}" ]] || [[ "${debug}" = 'true' ]]; then
 	ramsticks='1,2,3,4,5,6,7,8'
 fi
 
+lshw="$(lshw -disable device-tree -disable spd -disable memory -disable cpuinfo -disable cpuid -disable pci -disable isapnp -disable pcmcia -disable ide -disable usb -disable scsi -disable network -C memory)"
+lshw_slots='0'
+for bank_number in {0..7}; do
+	if echo "${lshw}" | grep -Eq "^[ ]+\*-bank:${bank_number}"; then
+		lshw_slots="$(("${lshw_slots}" + 1))"
+	fi
+done
+
 check_ramsticks
 if [[ "${error_ramstick}" = 'true' ]]; then
 	givemehelp
 	exit_one
 fi
 
-lshw="$(lshw -disable device-tree -disable spd -disable memory -disable cpuinfo -disable cpuid -disable pci -disable isapnp -disable pcmcia -disable ide -disable usb -disable scsi -disable network -C memory)"
+echo "lshw_slots ${lshw_slots}"
 if [[ "${debug}" != 'true' ]]; then
 	for bank_number in {0..7}; do
 		if echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' && echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'product: KF5'; then
