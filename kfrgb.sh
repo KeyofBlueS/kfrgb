@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.10.0
+# Version:    0.11.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -387,6 +387,7 @@ function about_detection() {
 
 function check_ramsticks_on_smbus() {
 
+	unset spd5118_module
 	if lsmod | grep -q 'spd5118'; then
 		spd5118_module='true'
 		modprobe -r spd5118
@@ -410,6 +411,49 @@ function check_ramsticks_on_smbus() {
 			echo
 			set_ramstick_hex_deployed='false'
 			smbus_detect="$(i2cdetect -y "${smbus_number_check}")"
+			unset spd5118_builtin_ram_one
+			unset spd5118_builtin_ram_two
+			unset spd5118_builtin_ram_three
+			unset spd5118_builtin_ram_four
+			unset spd5118_builtin_ram_five
+			unset spd5118_builtin_ram_six
+			unset spd5118_builtin_ram_seven
+			unset spd5118_builtin_ram_eight
+			if [[ "$(echo "${smbus_detect}"| grep -E "^50:" | awk '{print $2}')" = 'UU' ]] && [[ "$(cat /sys/bus/i2c/devices/${smbus_number_check}-0050/modalias)" = 'i2c:spd5118' ]]; then
+				spd5118_builtin_ram_one='true'
+				echo -n "${smbus_number_check}-0050" > /sys/bus/i2c/drivers/spd5118/unbind
+			fi
+			if [[ "$(echo "${smbus_detect}"| grep -E "^50:" | awk '{print $3}')" = 'UU' ]] && [[ "$(cat /sys/bus/i2c/devices/${smbus_number_check}-0051/modalias)" = 'i2c:spd5118' ]]; then
+				spd5118_builtin_ram_two='true'
+				echo -n "${smbus_number_check}-0051" > /sys/bus/i2c/drivers/spd5118/unbind
+			fi
+			if [[ "$(echo "${smbus_detect}"| grep -E "^50:" | awk '{print $4}')" = 'UU' ]] && [[ "$(cat /sys/bus/i2c/devices/${smbus_number_check}-0052/modalias)" = 'i2c:spd5118' ]]; then
+				spd5118_builtin_ram_three='true'
+				echo -n "${smbus_number_check}-0052" > /sys/bus/i2c/drivers/spd5118/unbind
+			fi
+			if [[ "$(echo "${smbus_detect}"| grep -E "^50:" | awk '{print $5}')" = 'UU' ]] && [[ "$(cat /sys/bus/i2c/devices/${smbus_number_check}-0053/modalias)" = 'i2c:spd5118' ]]; then
+				spd5118_builtin_ram_four='true'
+				echo -n "${smbus_number_check}-0053" > /sys/bus/i2c/drivers/spd5118/unbind
+			fi
+			if [[ "$(echo "${smbus_detect}"| grep -E "^50:" | awk '{print $6}')" = 'UU' ]] && [[ "$(cat /sys/bus/i2c/devices/${smbus_number_check}-0054/modalias)" = 'i2c:spd5118' ]]; then
+				spd5118_builtin_ram_five='true'
+				echo -n "${smbus_number_check}-0054" > /sys/bus/i2c/drivers/spd5118/unbind
+			fi
+			if [[ "$(echo "${smbus_detect}"| grep -E "^50:" | awk '{print $7}')" = 'UU' ]] && [[ "$(cat /sys/bus/i2c/devices/${smbus_number_check}-0055/modalias)" = 'i2c:spd5118' ]]; then
+				spd5118_builtin_ram_six='true'
+				echo -n "${smbus_number_check}-0055" > /sys/bus/i2c/drivers/spd5118/unbind
+			fi
+			if [[ "$(echo "${smbus_detect}"| grep -E "^50:" | awk '{print $8}')" = 'UU' ]] && [[ "$(cat /sys/bus/i2c/devices/${smbus_number_check}-0056/modalias)" = 'i2c:spd5118' ]]; then
+				spd5118_builtin_ram_seven='true'
+				echo -n "${smbus_number_check}-0056" > /sys/bus/i2c/drivers/spd5118/unbind
+			fi
+			if [[ "$(echo "${smbus_detect}"| grep -E "^50:" | awk '{print $9}')" = 'UU' ]] && [[ "$(cat /sys/bus/i2c/devices/${smbus_number_check}-0057/modalias)" = 'i2c:spd5118' ]]; then
+				spd5118_builtin_ram_eight='true'
+				echo -n "${smbus_number_check}-0057" > /sys/bus/i2c/drivers/spd5118/unbind
+			fi
+			if [[ "${spd5118_builtin_ram_one}" = 'true' ]] || [[ "${spd5118_builtin_ram_two}" = 'true' ]] || [[ "${spd5118_builtin_ram_three}" = 'true' ]] || [[ "${spd5118_builtin_ram_four}" = 'true' ]] || [[ "${spd5118_builtin_ram_five}" = 'true' ]] || [[ "${spd5118_builtin_ram_six}" = 'true' ]] || [[ "${spd5118_builtin_ram_seven}" = 'true' ]] || [[ "${spd5118_builtin_ram_eight}" = 'true' ]]; then
+				smbus_detect="$(i2cdetect -y "${smbus_number_check}")"
+			fi
 			if [[ "${debug}" = 'true' ]]; then
 				print_large_separator
 				echo -e "\e[1;32m- i2cdetect -y ${smbus_number_check} (check SMBus i2c-${smbus_number_check}):\e[0m"
@@ -577,14 +621,38 @@ function check_ramsticks_on_smbus() {
 				fi
 			fi
 		fi
+		if [[ "${spd5118_builtin_ram_one}" = 'true' ]]; then
+			echo -n "${smbus_number_check}-0050" > /sys/bus/i2c/drivers/spd5118/bind
+		fi
+		if [[ "${spd5118_builtin_ram_two}" = 'true' ]]; then
+			echo -n "${smbus_number_check}-0051" > /sys/bus/i2c/drivers/spd5118/bind
+		fi
+		if [[ "${spd5118_builtin_ram_three}" = 'true' ]]; then
+			echo -n "${smbus_number_check}-0052" > /sys/bus/i2c/drivers/spd5118/bind
+		fi
+		if [[ "${spd5118_builtin_ram_four}" = 'true' ]]; then
+			echo -n "${smbus_number_check}-0053" > /sys/bus/i2c/drivers/spd5118/bind
+		fi
+		if [[ "${spd5118_builtin_ram_five}" = 'true' ]]; then
+			echo -n "${smbus_number_check}-0054" > /sys/bus/i2c/drivers/spd5118/bind
+		fi
+		if [[ "${spd5118_builtin_ram_six}" = 'true' ]]; then
+			echo -n "${smbus_number_check}-0055" > /sys/bus/i2c/drivers/spd5118/bind
+		fi
+		if [[ "${spd5118_builtin_ram_seven}" = 'true' ]]; then
+			echo -n "${smbus_number_check}-0056" > /sys/bus/i2c/drivers/spd5118/bind
+		fi
+		if [[ "${spd5118_builtin_ram_eight}" = 'true' ]]; then
+			echo -n "${smbus_number_check}-0057" > /sys/bus/i2c/drivers/spd5118/bind
+		fi
 	done
+	if [[ "${spd5118_module}" = 'true' ]]; then
+		modprobe spd5118
+	fi
 	if [[ "$(echo ${smbus_numbers_check} | wc -w)" -eq '0' ]]; then
 		smbus_menu='true'
 	elif [[ "$(echo ${smbus_numbers_check} | wc -w)" -gt '1' ]]; then
 		exit_one
-	fi
-	if [[ "${spd5118_module}" = 'true' ]]; then
-		modprobe spd5118
 	fi
 }
 
@@ -1884,7 +1952,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.10.0
+# Version:    0.11.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -2264,7 +2332,7 @@ if [[ "${error_ramstick}" = 'true' ]]; then
 	exit_one
 fi
 
-echo "lshw_slots ${lshw_slots}"
+#echo "lshw_slots ${lshw_slots}"
 if [[ "${debug}" != 'true' ]]; then
 	for bank_number in {0..7}; do
 		if echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' && echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'product: KF5'; then
