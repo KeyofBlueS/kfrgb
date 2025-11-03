@@ -6,6 +6,8 @@
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
 
+### ☕️ [If you like what I do, consider buying me a coffee, it really helps!](https://ko-fi.com/keyofblues) ☕️
+
 ### DISCLAIMER
 **Please make really sure if selected RAM on an SMBus is really a 'Kingston Fury BEAST\RENEGADE DDR5 RGB'.
 For more info, please refer to https://gitlab.com/CalcProgrammer1/OpenRGB/-/issues/2879.
