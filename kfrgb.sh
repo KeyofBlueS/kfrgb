@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.11.0
+# Version:    0.12.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -1953,7 +1953,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.11.0
+# Version:    0.12.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
