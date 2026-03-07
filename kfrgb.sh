@@ -177,6 +177,7 @@ function initialize_modes() {
 	ramslot_block_5_one_expected_hex='10' # DO NOT EDIT AT ALL!
 	ramslot_block_5_two_expected_hex='11' # DO NOT EDIT AT ALL!
 	ramslot_block_5_three_expected_hex='12' # DO NOT EDIT AT ALL!
+	ramslot_block_5_four_expected_hex='15' # DO NOT EDIT AT ALL!
 	#initialize mode
 	fury_begin_trnsfer='53' # DO NOT EDIT AT ALL!
 	fury_reg_apply='08' # DO NOT EDIT AT ALL!
@@ -379,7 +380,7 @@ function about_detection() {
  - lshw: check for 'vendor: Kingston' and 'product: KF5*'.
   - i2cdetect: check if addresses 0x6[0-7], 0x5[0-7] and 0x4[8-f] exist on an smbus that support Quick Command.
    - i2cdump (mode i): on address 0x6[0-7] check if blocks 0x02=0x46, 0x03=0x55, 0x04=0x52, 0x05=0x59,
-     0x07=0x10/0x12 (for BEAST) OR =0x11 (for RENEGADE).
+     0x07=0x10/0x12/0x15 (for BEAST) OR =0x11 (for RENEGADE).
 
  The detection passes if all checks are true.
  The detection fails at the first error in the chain."
@@ -578,8 +579,8 @@ function check_ramsticks_on_smbus() {
 								echo
 							else
 								detect_blocks_hex
-								if [[ "${ramslot_block_1_detected_hex}" = "${ramslot_block_1_expected_hex}" ]] && [[ "${ramslot_block_2_detected_hex}" = "${ramslot_block_2_expected_hex}" ]] && [[ "${ramslot_block_3_detected_hex}" = "${ramslot_block_3_expected_hex}" ]] && [[ "${ramslot_block_4_detected_hex}" = "${ramslot_block_4_expected_hex}" ]] && [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}")$ ]]; then
-									if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_three_expected_hex}")$ ]]; then
+								if [[ "${ramslot_block_1_detected_hex}" = "${ramslot_block_1_expected_hex}" ]] && [[ "${ramslot_block_2_detected_hex}" = "${ramslot_block_2_expected_hex}" ]] && [[ "${ramslot_block_3_detected_hex}" = "${ramslot_block_3_expected_hex}" ]] && [[ "${ramslot_block_4_detected_hex}" = "${ramslot_block_4_expected_hex}" ]] && [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}")$ ]]; then
+									if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}")$ ]]; then
 										submodel='BEAST'
 									elif [[ "${ramslot_block_5_detected_hex}" = "${ramslot_block_5_two_expected_hex}" ]]; then
 										submodel='RENEGADE'
@@ -674,7 +675,7 @@ function detect_blocks_hex() {
 		wait='0.015'
 	fi
 	i2cdump_detect_blocks
-	if [[ "${ramslot_block_1_detected_hex}" != "${ramslot_block_1_expected_hex}" ]] || [[ "${ramslot_block_2_detected_hex}" != "${ramslot_block_2_expected_hex}" ]] || [[ "${ramslot_block_3_detected_hex}" != "${ramslot_block_3_expected_hex}" ]] || [[ "${ramslot_block_4_detected_hex}" != "${ramslot_block_4_expected_hex}" ]] || ! [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}")$ ]]; then
+	if [[ "${ramslot_block_1_detected_hex}" != "${ramslot_block_1_expected_hex}" ]] || [[ "${ramslot_block_2_detected_hex}" != "${ramslot_block_2_expected_hex}" ]] || [[ "${ramslot_block_3_detected_hex}" != "${ramslot_block_3_expected_hex}" ]] || [[ "${ramslot_block_4_detected_hex}" != "${ramslot_block_4_expected_hex}" ]] || ! [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}")$ ]]; then
 		if [[ "${ram_not_found}" != 'true' ]]; then
 			sleep "${wait}"
 			i2cset_retry -y "${smbus_number_check}" "0x${ramstick_hex}" "0x${fury_reg_apply}" "0x${fury_begin_trnsfer}"
@@ -765,7 +766,7 @@ function print_debug_info() {
 		detect_blocks_hex
 		debug_color='1;31'
 	fi
-	if [[ "${ramslot_block_1_detected_hex}" = "${ramslot_block_1_expected_hex}" ]] && [[ "${ramslot_block_2_detected_hex}" = "${ramslot_block_2_expected_hex}" ]] && [[ "${ramslot_block_3_detected_hex}" = "${ramslot_block_3_expected_hex}" ]] && [[ "${ramslot_block_4_detected_hex}" = "${ramslot_block_4_expected_hex}" ]] && [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}")$ ]]; then
+	if [[ "${ramslot_block_1_detected_hex}" = "${ramslot_block_1_expected_hex}" ]] && [[ "${ramslot_block_2_detected_hex}" = "${ramslot_block_2_expected_hex}" ]] && [[ "${ramslot_block_3_detected_hex}" = "${ramslot_block_3_expected_hex}" ]] && [[ "${ramslot_block_4_detected_hex}" = "${ramslot_block_4_expected_hex}" ]] && [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}")$ ]]; then
 		debug_blocks_color='1;32'
 	else
 		debug_blocks_color='1;31'
@@ -795,8 +796,8 @@ function print_debug_info() {
 	else
 		debug_model_4_color='1;31'
 	fi
-	if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}")$ ]]; then
-		if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_three_expected_hex}")$ ]]; then
+	if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}")$ ]]; then
+		if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}")$ ]]; then
 			submodel='BEAST'
 		elif [[ "${ramslot_block_5_detected_hex}" = "${ramslot_block_5_two_expected_hex}" ]]; then
 			submodel='RENEGADE'
@@ -809,7 +810,7 @@ function print_debug_info() {
 	echo -e "\e[${debug_model_2_color}m  * block 0x03: \e[m0x${ramslot_block_2_detected_hex} \e[${debug_model_2_color}m(expected 0x${ramslot_block_2_expected_hex})\e[0m"
 	echo -e "\e[${debug_model_3_color}m  * block 0x04: \e[m0x${ramslot_block_3_detected_hex} \e[${debug_model_3_color}m(expected 0x${ramslot_block_3_expected_hex})\e[0m"
 	echo -e "\e[${debug_model_4_color}m  * block 0x05: \e[m0x${ramslot_block_4_detected_hex} \e[${debug_model_4_color}m(expected 0x${ramslot_block_4_expected_hex})\e[0m"
-	echo -e "\e[${debug_model_5_color}m  * block 0x07: \e[m0x${ramslot_block_5_detected_hex} \e[${debug_model_5_color}m(expected 0x${ramslot_block_5_one_expected_hex}/0x${ramslot_block_5_three_expected_hex} for BEAST or 0x${ramslot_block_5_two_expected_hex} for RENEGADE)\e[0m"
+	echo -e "\e[${debug_model_5_color}m  * block 0x07: \e[m0x${ramslot_block_5_detected_hex} \e[${debug_model_5_color}m(expected 0x${ramslot_block_5_one_expected_hex}/0x${ramslot_block_5_three_expected_hex}/0x${ramslot_block_5_four_expected_hex} for BEAST or 0x${ramslot_block_5_two_expected_hex} for RENEGADE)\e[0m"
 	echo
 	if [[ -n "${ramslot_block_1_detected_hex}" ]] && [[ -n "${ramslot_block_2_detected_hex}" ]] && [[ -n "${ramslot_block_3_detected_hex}" ]] && [[ -n "${ramslot_block_4_detected_hex}" ]] && [[ -n "${ramslot_block_5_detected_hex}" ]]; then
 		model="$(printf "\x${ramslot_block_1_detected_hex}\x${ramslot_block_2_detected_hex}\x${ramslot_block_3_detected_hex}\x${ramslot_block_4_detected_hex} ${submodel}")"
