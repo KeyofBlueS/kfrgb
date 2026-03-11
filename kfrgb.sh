@@ -2,7 +2,7 @@
 
 # kfrgb
 
-# Version:    0.12.0
+# Version:    0.13.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -1953,7 +1953,7 @@ function givemehelp() {
 	echo "
 # kfrgb
 
-# Version:    0.12.0
+# Version:    0.13.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
@@ -2206,6 +2206,9 @@ function print_small_separator() {
 	echo '-----------------------------------------------------------------------------------------------------------------'
 	echo
 }
+
+LANG=en_US.UTF-8
+LANGUAGE=en:en
 
 kfrgb_name="$(echo "${0}" | rev | awk -F'/' '{print $1}' | rev)"
 if ! command -v "${kfrgb_name}" > /dev/null; then
