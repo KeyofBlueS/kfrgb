@@ -178,6 +178,7 @@ function initialize_modes() {
 	ramslot_block_5_two_expected_hex='11' # DO NOT EDIT AT ALL!
 	ramslot_block_5_three_expected_hex='12' # DO NOT EDIT AT ALL!
 	ramslot_block_5_four_expected_hex='15' # DO NOT EDIT AT ALL!
+	ramslot_block_5_five_expected_hex='13' # DO NOT EDIT AT ALL!
 	#initialize mode
 	fury_begin_trnsfer='53' # DO NOT EDIT AT ALL!
 	fury_reg_apply='08' # DO NOT EDIT AT ALL!
@@ -377,10 +378,10 @@ function about_detection() {
  very often address 0x5 is write protected (as in my system), which makes this method useless.
 
  ${kfrgb_name} will:
- - lshw: check for 'vendor: Kingston' and 'product: KF5*'.
+ - lshw: check for 'vendor: Kingston' and 'product: KF5*' or 'product: HP60U40S8HA*'.
   - i2cdetect: check if addresses 0x6[0-7], 0x5[0-7] and 0x4[8-f] exist on an smbus that support Quick Command.
    - i2cdump (mode i): on address 0x6[0-7] check if blocks 0x02=0x46, 0x03=0x55, 0x04=0x52, 0x05=0x59,
-     0x07=0x10/0x12/0x15 (for BEAST) OR =0x11 (for RENEGADE).
+     0x07=0x10/0x12/0x13/0x15 (for BEAST) OR =0x11 (for RENEGADE).
 
  The detection passes if all checks are true.
  The detection fails at the first error in the chain."
@@ -546,7 +547,7 @@ function check_ramsticks_on_smbus() {
 					risk='false'
 					echo
 				fi
-				if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+vendor: Kingston" || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+product: KF5" || ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "[ ]${ramstick_hex}[ ]" || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "[ ]${ramslot_value_one_check_hex}[ ]" || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "[ ]${ramslot_value_two_check_hex}[ ]"; then
+				if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+vendor: Kingston" || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+product: (KF5|HP60U40S8HA)" || ! echo "${smbus_detect}" | grep "^${ramstick_hex:0:1}" | awk -F':' '{print $2}'| grep -q "[ ]${ramstick_hex}[ ]" || ! echo "${smbus_detect}" | grep "^${ramslot_value_one_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "[ ]${ramslot_value_one_check_hex}[ ]" || ! echo "${smbus_detect}" | grep "^${ramslot_value_two_check_hex:0:1}" | awk -F':' '{print $2}'| grep -q "[ ]${ramslot_value_two_check_hex}[ ]"; then
 					echo -e "\e[1;33m- Kingston Fury DDR5 RAM in slot ${ramslot} not found on SMBus i2c-${smbus_number_check}.\e[0m"
 					ram_not_found='true'
 					debug_color='1;31'
@@ -579,8 +580,8 @@ function check_ramsticks_on_smbus() {
 								echo
 							else
 								detect_blocks_hex
-								if [[ "${ramslot_block_1_detected_hex}" = "${ramslot_block_1_expected_hex}" ]] && [[ "${ramslot_block_2_detected_hex}" = "${ramslot_block_2_expected_hex}" ]] && [[ "${ramslot_block_3_detected_hex}" = "${ramslot_block_3_expected_hex}" ]] && [[ "${ramslot_block_4_detected_hex}" = "${ramslot_block_4_expected_hex}" ]] && [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}")$ ]]; then
-									if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}")$ ]]; then
+								if [[ "${ramslot_block_1_detected_hex}" = "${ramslot_block_1_expected_hex}" ]] && [[ "${ramslot_block_2_detected_hex}" = "${ramslot_block_2_expected_hex}" ]] && [[ "${ramslot_block_3_detected_hex}" = "${ramslot_block_3_expected_hex}" ]] && [[ "${ramslot_block_4_detected_hex}" = "${ramslot_block_4_expected_hex}" ]] && [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}"|"${ramslot_block_5_five_expected_hex}")$ ]]; then
+									if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}"|"${ramslot_block_5_five_expected_hex}")$ ]]; then
 										submodel='BEAST'
 									elif [[ "${ramslot_block_5_detected_hex}" = "${ramslot_block_5_two_expected_hex}" ]]; then
 										submodel='RENEGADE'
@@ -675,7 +676,7 @@ function detect_blocks_hex() {
 		wait='0.015'
 	fi
 	i2cdump_detect_blocks
-	if [[ "${ramslot_block_1_detected_hex}" != "${ramslot_block_1_expected_hex}" ]] || [[ "${ramslot_block_2_detected_hex}" != "${ramslot_block_2_expected_hex}" ]] || [[ "${ramslot_block_3_detected_hex}" != "${ramslot_block_3_expected_hex}" ]] || [[ "${ramslot_block_4_detected_hex}" != "${ramslot_block_4_expected_hex}" ]] || ! [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}")$ ]]; then
+	if [[ "${ramslot_block_1_detected_hex}" != "${ramslot_block_1_expected_hex}" ]] || [[ "${ramslot_block_2_detected_hex}" != "${ramslot_block_2_expected_hex}" ]] || [[ "${ramslot_block_3_detected_hex}" != "${ramslot_block_3_expected_hex}" ]] || [[ "${ramslot_block_4_detected_hex}" != "${ramslot_block_4_expected_hex}" ]] || ! [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}"|"${ramslot_block_5_five_expected_hex}")$ ]]; then
 		if [[ "${ram_not_found}" != 'true' ]]; then
 			sleep "${wait}"
 			i2cset_retry -y "${smbus_number_check}" "0x${ramstick_hex}" "0x${fury_reg_apply}" "0x${fury_begin_trnsfer}"
@@ -702,7 +703,7 @@ function i2cdump_detect_blocks() {
 
 function print_debug_info() {
 
-	if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+vendor: Kingston" || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+product: KF5"; then
+	if ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+vendor: Kingston" || ! echo "${lshw}" | sed -n -e "/*-bank:${bank}/,/*/p" | head -n -1 | grep -Eq "[ ]+product: (KF5|HP60U40S8HA)"; then
 		debug_lshw_color='1;31'
 	else
 		debug_lshw_color='1;32'
@@ -766,7 +767,7 @@ function print_debug_info() {
 		detect_blocks_hex
 		debug_color='1;31'
 	fi
-	if [[ "${ramslot_block_1_detected_hex}" = "${ramslot_block_1_expected_hex}" ]] && [[ "${ramslot_block_2_detected_hex}" = "${ramslot_block_2_expected_hex}" ]] && [[ "${ramslot_block_3_detected_hex}" = "${ramslot_block_3_expected_hex}" ]] && [[ "${ramslot_block_4_detected_hex}" = "${ramslot_block_4_expected_hex}" ]] && [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}")$ ]]; then
+	if [[ "${ramslot_block_1_detected_hex}" = "${ramslot_block_1_expected_hex}" ]] && [[ "${ramslot_block_2_detected_hex}" = "${ramslot_block_2_expected_hex}" ]] && [[ "${ramslot_block_3_detected_hex}" = "${ramslot_block_3_expected_hex}" ]] && [[ "${ramslot_block_4_detected_hex}" = "${ramslot_block_4_expected_hex}" ]] && [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}"|"${ramslot_block_5_five_expected_hex}")$ ]]; then
 		debug_blocks_color='1;32'
 	else
 		debug_blocks_color='1;31'
@@ -796,8 +797,8 @@ function print_debug_info() {
 	else
 		debug_model_4_color='1;31'
 	fi
-	if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}")$ ]]; then
-		if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}")$ ]]; then
+	if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_two_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}"|"${ramslot_block_5_five_expected_hex}")$ ]]; then
+		if [[ "${ramslot_block_5_detected_hex}" =~ ^("${ramslot_block_5_one_expected_hex}"|"${ramslot_block_5_three_expected_hex}"|"${ramslot_block_5_four_expected_hex}"|"${ramslot_block_5_five_expected_hex}")$ ]]; then
 			submodel='BEAST'
 		elif [[ "${ramslot_block_5_detected_hex}" = "${ramslot_block_5_two_expected_hex}" ]]; then
 			submodel='RENEGADE'
@@ -810,7 +811,7 @@ function print_debug_info() {
 	echo -e "\e[${debug_model_2_color}m  * block 0x03: \e[m0x${ramslot_block_2_detected_hex} \e[${debug_model_2_color}m(expected 0x${ramslot_block_2_expected_hex})\e[0m"
 	echo -e "\e[${debug_model_3_color}m  * block 0x04: \e[m0x${ramslot_block_3_detected_hex} \e[${debug_model_3_color}m(expected 0x${ramslot_block_3_expected_hex})\e[0m"
 	echo -e "\e[${debug_model_4_color}m  * block 0x05: \e[m0x${ramslot_block_4_detected_hex} \e[${debug_model_4_color}m(expected 0x${ramslot_block_4_expected_hex})\e[0m"
-	echo -e "\e[${debug_model_5_color}m  * block 0x07: \e[m0x${ramslot_block_5_detected_hex} \e[${debug_model_5_color}m(expected 0x${ramslot_block_5_one_expected_hex}/0x${ramslot_block_5_three_expected_hex}/0x${ramslot_block_5_four_expected_hex} for BEAST or 0x${ramslot_block_5_two_expected_hex} for RENEGADE)\e[0m"
+	echo -e "\e[${debug_model_5_color}m  * block 0x07: \e[m0x${ramslot_block_5_detected_hex} \e[${debug_model_5_color}m(expected 0x${ramslot_block_5_one_expected_hex}/0x${ramslot_block_5_three_expected_hex}/0x${ramslot_block_5_five_expected_hex}/0x${ramslot_block_5_four_expected_hex} for BEAST or 0x${ramslot_block_5_two_expected_hex} for RENEGADE)\e[0m"
 	echo
 	if [[ -n "${ramslot_block_1_detected_hex}" ]] && [[ -n "${ramslot_block_2_detected_hex}" ]] && [[ -n "${ramslot_block_3_detected_hex}" ]] && [[ -n "${ramslot_block_4_detected_hex}" ]] && [[ -n "${ramslot_block_5_detected_hex}" ]]; then
 		model="$(printf "\x${ramslot_block_1_detected_hex}\x${ramslot_block_2_detected_hex}\x${ramslot_block_3_detected_hex}\x${ramslot_block_4_detected_hex} ${submodel}")"
@@ -2339,7 +2340,7 @@ fi
 #echo "lshw_slots ${lshw_slots}"
 if [[ "${debug}" != 'true' ]]; then
 	for bank_number in {0..7}; do
-		if echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' && echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'product: KF5'; then
+		if echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -q 'vendor: Kingston' && echo "${lshw}" | sed -n -e "/*-bank:${bank_number}/,/*/p" | head -n -1 | grep -Eq 'product: (KF5|HP60U40S8HA)'; then
 			lshw_noram='false'
 			break
 		fi
