@@ -1,7 +1,7 @@
 
 # kfrgb
 
-# Version:    0.13.0
+# Version:    0.14.0
 # Author:     KeyofBlueS
 # Repository: https://github.com/KeyofBlueS/kfrgb
 # License:    GNU General Public License v3.0, https://opensource.org/licenses/GPL-3.0
